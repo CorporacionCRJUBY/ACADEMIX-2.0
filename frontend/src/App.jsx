@@ -3,8 +3,8 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-import { I18nextProvider } from 'react-i18next';
-import i18n from './i18n';
+// FIX (auditoria hallazgo bajo B4): el I18nextProvider duplicado que estaba
+// aquí se eliminó — main.jsx ya envuelve a <App /> con el mismo provider.
 
 import { AuthProvider } from './context/AuthContext';
 import { LanguageProvider } from './context/LanguageContext';
@@ -560,81 +560,111 @@ function DocumentsNewRedirect() {
 
 function App() {
   return (
-    <I18nextProvider i18n={i18n}>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <BrowserRouter>
-          <AuthProvider>
-            <LanguageProvider>
-              <Routes>
-                {/* Rutas públicas */}
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/forbidden" element={<ForbiddenPage />} />
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <BrowserRouter>
+        <AuthProvider>
+          <LanguageProvider>
+            <Routes>
+              {/* Rutas públicas */}
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/forbidden" element={<ForbiddenPage />} />
 
-                {/* Rutas protegidas */}
-                <Route element={<ProtectedRoute />}>
-                  <Route element={<MainLayout />}>
-                    <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                    <Route path="/dashboard" element={<DashboardPage />} />
+              {/* Rutas protegidas */}
+              <Route element={<ProtectedRoute />}>
+                <Route element={<MainLayout />}>
+                  <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                  <Route path="/dashboard" element={<DashboardPage />} />
 
-                    {/* Academic History */}
+                  {/* FIX (auditoria hallazgo medio M2): las rutas de cada módulo
+                      exigen el permiso '<modulo>.view' del usuario (array
+                      permissions del AuthContext). SUPER_ADMIN pasa siempre
+                      porque hasPermission() lo exime por rol; los demás roles
+                      ven exactamente lo que el backend ya les autoriza. */}
+
+                  {/* Academic History */}
+                  <Route element={<ProtectedRoute permission="academic-history.view" />}>
                     <Route path="/academic-history" element={<AcademicHistoryListPage />} />
                     <Route path="/academic-history/new" element={<AcademicHistoryFormPage />} />
                     <Route path="/academic-history/:id" element={<AcademicHistoryFormPage />} />
                     <Route path="/academic-history/:id/edit" element={<AcademicHistoryFormPage />} />
+                  </Route>
 
-                    {/* Academic Periods */}
+                  {/* Academic Periods */}
+                  <Route element={<ProtectedRoute permission="academic-periods.view" />}>
                     <Route path="/academic-periods" element={<AcademicPeriodListPage />} />
                     <Route path="/academic-periods/new" element={<AcademicPeriodFormPage />} />
                     <Route path="/academic-periods/:id" element={<AcademicPeriodFormPage />} />
                     <Route path="/academic-periods/:id/edit" element={<AcademicPeriodFormPage />} />
+                  </Route>
 
-                    {/* Academic Years */}
+                  {/* Academic Years */}
+                  <Route element={<ProtectedRoute permission="academic-years.view" />}>
                     <Route path="/academic-years" element={<AcademicYearListPage />} />
                     <Route path="/academic-years/new" element={<AcademicYearFormPage />} />
                     <Route path="/academic-years/:id" element={<AcademicYearFormPage />} />
                     <Route path="/academic-years/:id/edit" element={<AcademicYearFormPage />} />
+                  </Route>
 
-                    {/* Activity */}
+                  {/* Activity */}
+                  <Route element={<ProtectedRoute permission="activity.view" />}>
                     <Route path="/activity" element={<ActivityListPage />} />
                     <Route path="/activity/:id" element={<ActivityFormPage />} />
+                  </Route>
 
-                    {/* Assignments */}
+                  {/* Assignments */}
+                  <Route element={<ProtectedRoute permission="assignments.view" />}>
                     <Route path="/assignments" element={<AssignmentListPage />} />
                     <Route path="/assignments/new" element={<AssignmentFormPage />} />
                     <Route path="/assignments/:id" element={<AssignmentFormPage />} />
                     <Route path="/assignments/:id/edit" element={<AssignmentFormPage />} />
+                  </Route>
 
-                    {/* Attendance */}
+                  {/* Attendance */}
+                  <Route element={<ProtectedRoute permission="attendance.view" />}>
                     <Route path="/attendance" element={<AttendanceListPage />} />
+                    {/* FIX (auditoria hallazgo bajo B8): vista mensual sin el
+                        param :assignmentId — la página carga el selector de
+                        asignaciones y elige la primera automáticamente. */}
+                    <Route path="/attendance/monthly" element={<MonthlyAttendancePage />} />
                     <Route path="/attendance/monthly/:assignmentId" element={<MonthlyAttendancePage />} />
                     <Route path="/attendance/new" element={<AttendanceFormPage />} />
                     <Route path="/attendance/:id" element={<AttendanceFormPage />} />
                     <Route path="/attendance/:id/edit" element={<AttendanceFormPage />} />
+                  </Route>
 
-                    {/* Audit */}
+                  {/* Audit */}
+                  <Route element={<ProtectedRoute permission="audit.view" />}>
                     <Route path="/audit" element={<AuditListPage />} />
                     <Route path="/audit/:id" element={<AuditFormPage />} />
+                  </Route>
 
-                    {/* Branches */}
+                  {/* Branches */}
+                  <Route element={<ProtectedRoute permission="branches.view" />}>
                     <Route path="/branches" element={<BranchListPage />} />
                     <Route path="/branches/new" element={<BranchFormPage />} />
                     <Route path="/branches/:id" element={<BranchFormPage />} />
                     <Route path="/branches/:id/edit" element={<BranchFormPage />} />
+                  </Route>
 
-                    {/* Calendar */}
+                  {/* Calendar */}
+                  <Route element={<ProtectedRoute permission="calendar.view" />}>
                     <Route path="/calendar" element={<CalendarListPage />} />
                     <Route path="/calendar/new" element={<CalendarFormPage />} />
                     <Route path="/calendar/:id" element={<CalendarFormPage />} />
                     <Route path="/calendar/:id/edit" element={<CalendarFormPage />} />
+                  </Route>
 
-                    {/* Credits */}
+                  {/* Credits */}
+                  <Route element={<ProtectedRoute permission="credits.view" />}>
                     <Route path="/credits" element={<CreditListPage />} />
                     <Route path="/credits/new" element={<CreditFormPage />} />
                     <Route path="/credits/:id" element={<CreditFormPage />} />
                     <Route path="/credits/:id/edit" element={<CreditFormPage />} />
+                  </Route>
 
-                    {/* Documents */}
+                  {/* Documents */}
+                  <Route element={<ProtectedRoute permission="documents.view" />}>
                     <Route path="/documents" element={<DocumentListPage />} />
                     {/* Documents always require a file (file_path/file_name are
                         NOT NULL in the schema), so the old metadata-only "new"
@@ -644,144 +674,200 @@ function App() {
                     <Route path="/documents/upload" element={<DocumentFormPage />} />
                     <Route path="/documents/:id" element={<DocumentFormPage />} />
                     <Route path="/documents/:id/edit" element={<DocumentFormPage />} />
+                  </Route>
 
-                    {/* GPA */}
+                  {/* GPA */}
+                  <Route element={<ProtectedRoute permission="gpa.view" />}>
                     <Route path="/gpa" element={<GpaListPage />} />
                     <Route path="/gpa/new" element={<GpaFormPage />} />
                     <Route path="/gpa/:id" element={<GpaFormPage />} />
                     <Route path="/gpa/:id/edit" element={<GpaFormPage />} />
+                  </Route>
 
-                    {/* Grade Change Requests */}
+                  {/* Grade Change Requests */}
+                  <Route element={<ProtectedRoute permission="grade-change-requests.view" />}>
                     <Route path="/grade-change-requests" element={<GradeChangeRequestListPage />} />
                     <Route path="/grade-change-requests/new" element={<GradeChangeRequestFormPage />} />
                     <Route path="/grade-change-requests/:id" element={<GradeChangeRequestFormPage />} />
                     <Route path="/grade-change-requests/:id/edit" element={<GradeChangeRequestFormPage />} />
+                  </Route>
 
-                    {/* Grades */}
+                  {/* Grades */}
+                  <Route element={<ProtectedRoute permission="grades.view" />}>
                     <Route path="/grades" element={<GradeListPage />} />
                     <Route path="/grades/new" element={<GradeFormPage />} />
                     <Route path="/grades/:id" element={<GradeFormPage />} />
                     <Route path="/grades/:id/edit" element={<GradeFormPage />} />
+                  </Route>
 
-                    {/* Graduation */}
+                  {/* Graduation */}
+                  <Route element={<ProtectedRoute permission="graduation.view" />}>
                     <Route path="/graduation" element={<GraduationListPage />} />
                     <Route path="/graduation/new" element={<GraduationFormPage />} />
                     <Route path="/graduation/:id" element={<GraduationFormPage />} />
                     <Route path="/graduation/:id/edit" element={<GraduationFormPage />} />
+                  </Route>
 
-                    {/* Gransif */}
+                  {/* Gransif */}
+                  <Route element={<ProtectedRoute permission="gransif.view" />}>
                     <Route path="/gransif" element={<GransifListPage />} />
                     <Route path="/gransif/new" element={<GransifFormPage />} />
                     <Route path="/gransif/:id" element={<GransifFormPage />} />
                     <Route path="/gransif/:id/edit" element={<GransifFormPage />} />
+                  </Route>
 
-                    {/* Guardians */}
+                  {/* Guardians */}
+                  <Route element={<ProtectedRoute permission="guardians.view" />}>
                     <Route path="/guardians" element={<GuardianListPage />} />
                     <Route path="/guardians/new" element={<GuardianFormPage />} />
                     <Route path="/guardians/:id" element={<GuardianFormPage />} />
                     <Route path="/guardians/:id/edit" element={<GuardianFormPage />} />
+                  </Route>
 
-                    {/* Medical Records */}
+                  {/* Medical Records */}
+                  <Route element={<ProtectedRoute permission="medical-records.view" />}>
                     <Route path="/medical-records" element={<MedicalRecordListPage />} />
                     <Route path="/medical-records/new" element={<MedicalRecordFormPage />} />
                     <Route path="/medical-records/:id" element={<MedicalRecordFormPage />} />
                     <Route path="/medical-records/:id/edit" element={<MedicalRecordFormPage />} />
+                  </Route>
 
-                    {/* Permissions */}
+                  {/* Permissions */}
+                  <Route element={<ProtectedRoute permission="permissions.view" />}>
                     <Route path="/permissions" element={<PermissionListPage />} />
                     <Route path="/permissions/new" element={<PermissionFormPage />} />
                     <Route path="/permissions/:id" element={<PermissionFormPage />} />
                     <Route path="/permissions/:id/edit" element={<PermissionFormPage />} />
+                  </Route>
 
-                    {/* Previous Schools */}
+                  {/* Previous Schools */}
+                  <Route element={<ProtectedRoute permission="previous-schools.view" />}>
                     <Route path="/previous-schools" element={<PreviousSchoolListPage />} />
                     <Route path="/previous-schools/new" element={<PreviousSchoolFormPage />} />
                     <Route path="/previous-schools/:id" element={<PreviousSchoolFormPage />} />
                     <Route path="/previous-schools/:id/edit" element={<PreviousSchoolFormPage />} />
+                  </Route>
 
-                    {/* Progress Reports */}
+                  {/* Progress Reports */}
+                  <Route element={<ProtectedRoute permission="progress-reports.view" />}>
                     <Route path="/progress-reports" element={<ProgressReportListPage />} />
                     <Route path="/progress-reports/new" element={<ProgressReportFormPage />} />
                     <Route path="/progress-reports/:id" element={<ProgressReportFormPage />} />
                     <Route path="/progress-reports/:id/edit" element={<ProgressReportFormPage />} />
+                  </Route>
 
-                    {/* Report Cards */}
+                  {/* Report Cards */}
+                  <Route element={<ProtectedRoute permission="report-cards.view" />}>
                     <Route path="/report-cards" element={<ReportCardListPage />} />
                     <Route path="/report-cards/new" element={<ReportCardFormPage />} />
                     <Route path="/report-cards/:id" element={<ReportCardFormPage />} />
                     <Route path="/report-cards/:id/edit" element={<ReportCardFormPage />} />
+                  </Route>
 
-                    {/* Reports */}
+                  {/* Reports */}
+                  <Route element={<ProtectedRoute permission="reports.view" />}>
                     <Route path="/reports" element={<ReportListPage />} />
                     <Route path="/reports/:id" element={<ReportFormPage />} />
+                  </Route>
 
-                    {/* Roles */}
+                  {/* Roles */}
+                  <Route element={<ProtectedRoute permission="roles.view" />}>
                     <Route path="/roles" element={<RoleListPage />} />
                     <Route path="/roles/new" element={<RoleFormPage />} />
                     <Route path="/roles/:id" element={<RoleFormPage />} />
                     <Route path="/roles/:id/edit" element={<RoleFormPage />} />
                     <Route path="/roles/:id/permissions" element={<RolePermissionsPage />} />
+                  </Route>
 
-                    {/* Scholarships */}
+                  {/* Scholarships */}
+                  <Route element={<ProtectedRoute permission="scholarships.view" />}>
                     <Route path="/scholarships" element={<ScholarshipListPage />} />
                     <Route path="/scholarships/new" element={<ScholarshipFormPage />} />
                     <Route path="/scholarships/:id" element={<ScholarshipFormPage />} />
                     <Route path="/scholarships/:id/edit" element={<ScholarshipFormPage />} />
+                  </Route>
 
-                    {/* Settings */}
+                  {/* Settings */}
+                  <Route element={<ProtectedRoute permission="settings.view" />}>
                     <Route path="/settings" element={<SettingListPage />} />
                     <Route path="/settings/edit" element={<SettingListPage />} />
+                  </Route>
 
-                    {/* Students */}
+                  {/* Students */}
+                  <Route element={<ProtectedRoute permission="students.view" />}>
                     <Route path="/students" element={<StudentListPage />} />
                     <Route path="/students/new" element={<StudentFormPage />} />
                     <Route path="/students/:id" element={<StudentRecordPage />} />
                     <Route path="/students/:id/edit" element={<StudentFormPage />} />
                     <Route path="/students/:id/record" element={<StudentRecordPage />} />
+                  </Route>
 
-                    {/* Subjects */}
+                  {/* Subjects */}
+                  <Route element={<ProtectedRoute permission="subjects.view" />}>
                     <Route path="/subjects" element={<SubjectListPage />} />
                     <Route path="/subjects/new" element={<SubjectFormPage />} />
                     <Route path="/subjects/:id" element={<SubjectFormPage />} />
                     <Route path="/subjects/:id/edit" element={<SubjectFormPage />} />
+                  </Route>
 
-                    {/* Teachers */}
+                  {/* Teachers */}
+                  <Route element={<ProtectedRoute permission="teachers.view" />}>
                     <Route path="/teachers" element={<TeacherListPage />} />
                     <Route path="/teachers/new" element={<TeacherFormPage />} />
                     <Route path="/teachers/:id" element={<TeacherRecordPage />} />
                     <Route path="/teachers/:id/edit" element={<TeacherFormPage />} />
                     <Route path="/teachers/:id/assignments" element={<TeacherRecordPage />} />
+                  </Route>
 
-                    {/* Transcripts */}
+                  {/* Transcripts */}
+                  <Route element={<ProtectedRoute permission="transcripts.view" />}>
                     <Route path="/transcripts" element={<TranscriptListPage />} />
                     <Route path="/transcripts/new" element={<TranscriptFormPage />} />
                     <Route path="/transcripts/:id" element={<TranscriptFormPage />} />
                     <Route path="/transcripts/:id/edit" element={<TranscriptFormPage />} />
+                  </Route>
 
-                    {/* Users */}
+                  {/* Users */}
+                  <Route element={<ProtectedRoute permission="users.view" />}>
                     <Route path="/users" element={<UserListPage />} />
                     <Route path="/users/new" element={<UserFormPage />} />
                     <Route path="/users/:id" element={<UserFormPage />} />
                     <Route path="/users/:id/edit" element={<UserFormPage />} />
                     <Route path="/users/:id/change-password" element={<UserFormPage />} />
                     <Route path="/users/:id/roles" element={<UserRolesPage />} />
+                  </Route>
 
-                    {/* Profile */}
-                    <Route path="/profile" element={<ProfilePage />} />
+                  {/* Profile (autogestión del propio usuario: solo auth) */}
+                  <Route path="/profile" element={<ProfilePage />} />
 
-                    {/* Super Admin Console */}
+                  {/* Super Admin Console: requiere permiso de administración */}
+                  <Route
+                    element={
+                      <ProtectedRoute
+                        anyPermissions={[
+                          'users.view',
+                          'roles.view',
+                          'permissions.view',
+                          'branches.view',
+                          'settings.view',
+                          'audit.view',
+                          'activity.view',
+                        ]}
+                      />
+                    }
+                  >
                     <Route path="/admin" element={<SuperAdminConsolePage />} />
                   </Route>
                 </Route>
+              </Route>
 
-                {/* 404 */}
-                <Route path="*" element={<NotFoundPage />} />
-              </Routes>
-            </LanguageProvider>
-          </AuthProvider>
-        </BrowserRouter>
-      </ThemeProvider>
-    </I18nextProvider>
+              {/* 404 */}
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
+          </LanguageProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </ThemeProvider>
   );
 }
 

@@ -1,17 +1,23 @@
 -- ACADEMIX 2.0 - Esquema completo de base de datos
 -- MySQL/MariaDB
+-- Generado a partir de las migraciones 001-056 (database/migrations),
+-- aplicando también los ALTER de las migraciones 048-056 sobre la forma
+-- final de cada tabla.
 
 -- =====================================================
 -- TABLAS DE SISTEMA Y SEGURIDAD
 -- =====================================================
--- 001_code_sequences
+
+-- 001_code_sequences (unicidad corregida por 051: prefix ya no es UNIQUE
+-- por sí solo; la secuencia es única por combinación prefix + year)
 CREATE TABLE code_sequences (
   id INT PRIMARY KEY AUTO_INCREMENT,
-  prefix VARCHAR(10) NOT NULL UNIQUE,
+  prefix VARCHAR(10) NOT NULL,
   last_number INT DEFAULT 0,
   year INT NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY code_sequences_prefix_year_unique (prefix, year)
 );
 
 -- 002_branches
@@ -46,7 +52,39 @@ CREATE TABLE roles (
   updated_by INT NULL
 );
 
--- 004_permissions
+-- 006_users (incluye 049 locked_until, 054 columnas 2FA,
+-- 055 password_changed_at y 057 anchos para cifrado AES-256-GCM)
+CREATE TABLE users (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  code VARCHAR(20) NOT NULL UNIQUE,
+  email VARCHAR(100) NOT NULL UNIQUE,
+  password VARCHAR(255) NOT NULL,
+  full_name VARCHAR(100) NOT NULL,
+  phone VARCHAR(20),
+  role_id INT NULL,
+  branch_id INT NULL,
+  status ENUM('ACTIVE', 'INACTIVE', 'SUSPENDED') DEFAULT 'ACTIVE',
+  last_login TIMESTAMP NULL,
+  login_attempts INT DEFAULT 0,
+  locked_until TIMESTAMP NULL,
+  twofa_secret VARCHAR(255) NULL,
+  twofa_pending_secret VARCHAR(255) NULL,
+  twofa_enabled BOOLEAN NOT NULL DEFAULT FALSE,
+  twofa_backup_codes TEXT NULL,
+  twofa_enabled_at TIMESTAMP NULL,
+  password_changed_at TIMESTAMP NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  deleted_at TIMESTAMP NULL,
+  deleted_by INT NULL,
+  created_by INT NULL,
+  updated_by INT NULL,
+  FOREIGN KEY (role_id) REFERENCES roles(id),
+  FOREIGN KEY (branch_id) REFERENCES branches(id)
+);
+
+-- 004_permissions (created_by/updated_by agregados por 050; va después de
+-- users porque esas columnas tienen FK hacia users)
 CREATE TABLE permissions (
   id INT PRIMARY KEY AUTO_INCREMENT,
   code VARCHAR(20) NOT NULL UNIQUE,
@@ -57,7 +95,11 @@ CREATE TABLE permissions (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   deleted_at TIMESTAMP NULL,
   deleted_by INT NULL,
-  UNIQUE KEY uk_module_action (module, action)
+  created_by INT UNSIGNED NULL,
+  updated_by INT UNSIGNED NULL,
+  UNIQUE KEY uk_module_action (module, action),
+  FOREIGN KEY (created_by) REFERENCES users(id),
+  FOREIGN KEY (updated_by) REFERENCES users(id)
 );
 
 -- 005_role_permissions
@@ -72,30 +114,6 @@ CREATE TABLE role_permissions (
   UNIQUE KEY uk_role_permission (role_id, permission_id)
 );
 
--- 006_users
-CREATE TABLE users (
-  id INT PRIMARY KEY AUTO_INCREMENT,
-  code VARCHAR(20) NOT NULL UNIQUE,
-  email VARCHAR(100) NOT NULL UNIQUE,
-  password VARCHAR(255) NOT NULL,
-  full_name VARCHAR(100) NOT NULL,
-  phone VARCHAR(20),
-  role_id INT NULL,
-  branch_id INT NULL,
-  status ENUM('ACTIVE', 'INACTIVE', 'SUSPENDED') DEFAULT 'ACTIVE',
-  last_login TIMESTAMP NULL,
-  login_attempts INT DEFAULT 0,
-  locked_until TIMESTAMP NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  deleted_at TIMESTAMP NULL,
-  deleted_by INT NULL,
-  created_by INT NULL,
-  updated_by INT NULL,
-  FOREIGN KEY (role_id) REFERENCES roles(id),
-  FOREIGN KEY (branch_id) REFERENCES branches(id)
-);
-
 -- 007_user_roles
 CREATE TABLE user_roles (
   id INT PRIMARY KEY AUTO_INCREMENT,
@@ -108,11 +126,42 @@ CREATE TABLE user_roles (
   UNIQUE KEY uk_user_role (user_id, role_id)
 );
 
+-- 053_revoked_tokens (lista de exclusión de JWT revocados antes de su
+-- expiración; user_id nullable por si el token ya no tiene usuario)
+CREATE TABLE revoked_tokens (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  jti VARCHAR(36) NOT NULL UNIQUE,
+  user_id INT NULL,
+  token_type ENUM('access', 'refresh') NOT NULL,
+  expires_at TIMESTAMP NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  INDEX idx_revoked_tokens_expires_at (expires_at)
+);
+
 -- =====================================================
 -- TABLAS ACADÉMICAS
 -- =====================================================
 
--- 008_students
+-- 007a_academic_years (antes numerada 014; se crea antes que students,
+-- que tiene FK hacia ella)
+CREATE TABLE academic_years (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  code VARCHAR(20) NOT NULL UNIQUE,
+  name VARCHAR(50) NOT NULL,
+  start_date DATE NOT NULL,
+  end_date DATE NOT NULL,
+  status ENUM('ACTIVE', 'INACTIVE') DEFAULT 'ACTIVE',
+  is_active BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  deleted_at TIMESTAMP NULL,
+  deleted_by INT NULL,
+  created_by INT NULL,
+  updated_by INT NULL
+);
+
+-- 008_students (las columnas que agregaba 048 ya existen desde 008)
 CREATE TABLE students (
   id INT PRIMARY KEY AUTO_INCREMENT,
   code VARCHAR(20) NOT NULL UNIQUE,
@@ -133,7 +182,7 @@ CREATE TABLE students (
   section VARCHAR(20),
   branch_id INT NOT NULL,
   academic_year_id INT NOT NULL,
-  enrollment_date DATE DEFAULT (CURRENT_DATE),
+  enrollment_date DATE NOT NULL,
   graduation_year INT,
   status ENUM('ACTIVE', 'INACTIVE', 'GRADUATED', 'WITHDRAWN', 'TRANSFERRED', 'SUSPENDED') DEFAULT 'ACTIVE',
   notes TEXT,
@@ -144,7 +193,8 @@ CREATE TABLE students (
   created_by INT NULL,
   updated_by INT NULL,
   FOREIGN KEY (user_id) REFERENCES users(id),
-  FOREIGN KEY (branch_id) REFERENCES branches(id)
+  FOREIGN KEY (branch_id) REFERENCES branches(id),
+  FOREIGN KEY (academic_year_id) REFERENCES academic_years(id)
 );
 
 -- 009_student_status_history
@@ -161,7 +211,7 @@ CREATE TABLE student_status_history (
   FOREIGN KEY (changed_by) REFERENCES users(id)
 );
 
--- 010_teachers
+-- 010_teachers (las columnas que agregaba 048 ya existen desde 010)
 CREATE TABLE teachers (
   id INT PRIMARY KEY AUTO_INCREMENT,
   code VARCHAR(20) NOT NULL UNIQUE,
@@ -188,7 +238,7 @@ CREATE TABLE teachers (
   FOREIGN KEY (branch_id) REFERENCES branches(id)
 );
 
--- 011_guardians
+-- 011_guardians (las columnas que agregaba 048 ya existen desde 011)
 CREATE TABLE guardians (
   id INT PRIMARY KEY AUTO_INCREMENT,
   code VARCHAR(20) NOT NULL UNIQUE,
@@ -245,23 +295,6 @@ CREATE TABLE subjects (
   created_by INT NULL,
   updated_by INT NULL,
   FOREIGN KEY (branch_id) REFERENCES branches(id)
-);
-
--- 014_academic_years
-CREATE TABLE academic_years (
-  id INT PRIMARY KEY AUTO_INCREMENT,
-  code VARCHAR(20) NOT NULL UNIQUE,
-  name VARCHAR(50) NOT NULL,
-  start_date DATE NOT NULL,
-  end_date DATE NOT NULL,
-  status ENUM('ACTIVE', 'INACTIVE') DEFAULT 'ACTIVE',
-  is_active BOOLEAN DEFAULT FALSE,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  deleted_at TIMESTAMP NULL,
-  deleted_by INT NULL,
-  created_by INT NULL,
-  updated_by INT NULL
 );
 
 -- 015_academic_periods
@@ -347,7 +380,8 @@ CREATE TABLE attendance_history (
   FOREIGN KEY (changed_by) REFERENCES users(id)
 );
 
--- 019_grade_records
+-- 019_grade_records (índice de job idx_grade_records_status_deadline
+-- agregado por 056)
 CREATE TABLE grade_records (
   id INT PRIMARY KEY AUTO_INCREMENT,
   code VARCHAR(20) NOT NULL UNIQUE,
@@ -370,7 +404,8 @@ CREATE TABLE grade_records (
   FOREIGN KEY (subject_id) REFERENCES subjects(id),
   FOREIGN KEY (assignment_id) REFERENCES academic_assignments(id),
   FOREIGN KEY (academic_period_id) REFERENCES academic_periods(id),
-  UNIQUE KEY uk_student_subject_assignment (student_id, subject_id, assignment_id, academic_period_id)
+  UNIQUE KEY grade_records_unique_entry (student_id, subject_id, assignment_id, academic_period_id),
+  INDEX idx_grade_records_status_deadline (status, edit_deadline)
 );
 
 -- 020_grade_history
@@ -388,7 +423,8 @@ CREATE TABLE grade_history (
   FOREIGN KEY (changed_by) REFERENCES users(id)
 );
 
--- 021_grade_change_requests
+-- 021_grade_change_requests (created_by/updated_by agregados por 050;
+-- índice de job idx_grade_change_requests_record_status agregado por 056)
 CREATE TABLE grade_change_requests (
   id INT PRIMARY KEY AUTO_INCREMENT,
   code VARCHAR(20) NOT NULL UNIQUE,
@@ -406,17 +442,23 @@ CREATE TABLE grade_change_requests (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   deleted_at TIMESTAMP NULL,
   deleted_by INT NULL,
+  created_by INT UNSIGNED NULL,
+  updated_by INT UNSIGNED NULL,
   FOREIGN KEY (grade_record_id) REFERENCES grade_records(id),
   FOREIGN KEY (student_id) REFERENCES students(id),
   FOREIGN KEY (requested_by) REFERENCES users(id),
-  FOREIGN KEY (reviewed_by) REFERENCES users(id)
+  FOREIGN KEY (reviewed_by) REFERENCES users(id),
+  FOREIGN KEY (created_by) REFERENCES users(id),
+  FOREIGN KEY (updated_by) REFERENCES users(id),
+  INDEX idx_grade_change_requests_record_status (grade_record_id, status)
 );
 
 -- =====================================================
 -- TABLAS DE HISTORIAL ACADÉMICO
 -- =====================================================
 
--- 022_academic_history
+-- 022_academic_history (unicidad de filas activas vía active_guard,
+-- agregada por 056)
 CREATE TABLE academic_history (
   id INT PRIMARY KEY AUTO_INCREMENT,
   code VARCHAR(20) NOT NULL UNIQUE,
@@ -434,10 +476,12 @@ CREATE TABLE academic_history (
   deleted_by INT NULL,
   created_by INT NULL,
   updated_by INT NULL,
+  active_guard TINYINT GENERATED ALWAYS AS (IF(deleted_at IS NULL, 1, NULL)) VIRTUAL,
   FOREIGN KEY (student_id) REFERENCES students(id),
   FOREIGN KEY (academic_period_id) REFERENCES academic_periods(id),
   FOREIGN KEY (academic_year_id) REFERENCES academic_years(id),
-  FOREIGN KEY (subject_id) REFERENCES subjects(id)
+  FOREIGN KEY (subject_id) REFERENCES subjects(id),
+  UNIQUE KEY uq_academic_history_active (student_id, academic_period_id, subject_id, active_guard)
 );
 
 -- 023_credits
@@ -516,6 +560,29 @@ CREATE TABLE gpa_history (
 -- TABLAS DE BECAS Y DOCUMENTOS
 -- =====================================================
 
+-- 009a_documents (antes numerada 031; se crea antes que
+-- scholarship_documents y medical_documents, que tienen FK hacia ella)
+CREATE TABLE documents (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  code VARCHAR(20) NOT NULL UNIQUE,
+  student_id INT NOT NULL,
+  document_type VARCHAR(50) NOT NULL,
+  title VARCHAR(100) NOT NULL,
+  file_path VARCHAR(255) NOT NULL,
+  file_name VARCHAR(100) NOT NULL,
+  file_size INT,
+  mime_type VARCHAR(50),
+  status ENUM('ACTIVE', 'INACTIVE') DEFAULT 'ACTIVE',
+  upload_date DATE NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  deleted_at TIMESTAMP NULL,
+  deleted_by INT NULL,
+  created_by INT NULL,
+  updated_by INT NULL,
+  FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+);
+
 -- 027_previous_schools
 CREATE TABLE previous_schools (
   id INT PRIMARY KEY AUTO_INCREMENT,
@@ -588,28 +655,6 @@ CREATE TABLE scholarship_documents (
   UNIQUE KEY uk_scholarship_document (scholarship_id, document_id)
 );
 
--- 031_documents
-CREATE TABLE documents (
-  id INT PRIMARY KEY AUTO_INCREMENT,
-  code VARCHAR(20) NOT NULL UNIQUE,
-  student_id INT NOT NULL,
-  document_type VARCHAR(50) NOT NULL,
-  title VARCHAR(100) NOT NULL,
-  file_path VARCHAR(255) NOT NULL,
-  file_name VARCHAR(100) NOT NULL,
-  file_size INT,
-  mime_type VARCHAR(50),
-  status ENUM('ACTIVE', 'INACTIVE') DEFAULT 'ACTIVE',
-  upload_date DATE DEFAULT (CURRENT_DATE),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  deleted_at TIMESTAMP NULL,
-  deleted_by INT NULL,
-  created_by INT NULL,
-  updated_by INT NULL,
-  FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
-);
-
 -- 032_document_folders
 CREATE TABLE document_folders (
   id INT PRIMARY KEY AUTO_INCREMENT,
@@ -638,7 +683,8 @@ CREATE TABLE document_types (
 -- TABLAS DE SALUD Y CALENDARIO
 -- =====================================================
 
--- 034_medical_records
+-- 034_medical_records (unicidad de filas activas vía active_guard,
+-- agregada por 056)
 CREATE TABLE medical_records (
   id INT PRIMARY KEY AUTO_INCREMENT,
   code VARCHAR(20) NOT NULL UNIQUE,
@@ -658,7 +704,9 @@ CREATE TABLE medical_records (
   deleted_by INT NULL,
   created_by INT NULL,
   updated_by INT NULL,
-  FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+  active_guard TINYINT GENERATED ALWAYS AS (IF(deleted_at IS NULL, 1, NULL)) VIRTUAL,
+  FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+  UNIQUE KEY uq_medical_records_active (student_id, active_guard)
 );
 
 -- 035_medical_documents
@@ -699,7 +747,7 @@ CREATE TABLE school_calendar (
 -- TABLAS DE REPORTES Y TRANSCRIPCIONES
 -- =====================================================
 
--- 037_reports
+-- 037_reports (created_by/updated_by agregados por 050)
 CREATE TABLE reports (
   id INT PRIMARY KEY AUTO_INCREMENT,
   code VARCHAR(20) NOT NULL UNIQUE,
@@ -707,7 +755,7 @@ CREATE TABLE reports (
   student_id INT NOT NULL,
   academic_period_id INT NULL,
   academic_year_id INT NULL,
-  report_date DATE DEFAULT (CURRENT_DATE),
+  report_date DATE NOT NULL,
   status ENUM('DRAFT', 'OFFICIAL', 'ARCHIVED', 'REPRINTED') DEFAULT 'DRAFT',
   version_number INT DEFAULT 1,
   pdf_path VARCHAR(255),
@@ -718,10 +766,14 @@ CREATE TABLE reports (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   deleted_at TIMESTAMP NULL,
   deleted_by INT NULL,
+  created_by INT UNSIGNED NULL,
+  updated_by INT UNSIGNED NULL,
   FOREIGN KEY (student_id) REFERENCES students(id),
   FOREIGN KEY (academic_period_id) REFERENCES academic_periods(id),
   FOREIGN KEY (academic_year_id) REFERENCES academic_years(id),
-  FOREIGN KEY (generated_by) REFERENCES users(id)
+  FOREIGN KEY (generated_by) REFERENCES users(id),
+  FOREIGN KEY (created_by) REFERENCES users(id),
+  FOREIGN KEY (updated_by) REFERENCES users(id)
 );
 
 -- 038_report_versions
@@ -741,7 +793,7 @@ CREATE TABLE report_versions (
   UNIQUE KEY uk_report_version (report_id, version_number)
 );
 
--- 039_transcripts
+-- 039_transcripts (created_by/updated_by agregados por 050)
 CREATE TABLE transcripts (
   id INT PRIMARY KEY AUTO_INCREMENT,
   code VARCHAR(20) NOT NULL UNIQUE,
@@ -761,11 +813,15 @@ CREATE TABLE transcripts (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   deleted_at TIMESTAMP NULL,
   deleted_by INT NULL,
+  created_by INT UNSIGNED NULL,
+  updated_by INT UNSIGNED NULL,
   FOREIGN KEY (student_id) REFERENCES students(id),
   FOREIGN KEY (academic_period_id) REFERENCES academic_periods(id),
   FOREIGN KEY (academic_year_id) REFERENCES academic_years(id),
   FOREIGN KEY (generated_by) REFERENCES users(id),
-  FOREIGN KEY (approved_by) REFERENCES users(id)
+  FOREIGN KEY (approved_by) REFERENCES users(id),
+  FOREIGN KEY (created_by) REFERENCES users(id),
+  FOREIGN KEY (updated_by) REFERENCES users(id)
 );
 
 -- 040_transcript_courses
@@ -803,7 +859,8 @@ CREATE TABLE transcript_versions (
 -- TABLAS DE GRADUACIÓN Y GRANSIF
 -- =====================================================
 
--- 042_graduation_records
+-- 042_graduation_records (unicidad de filas activas vía active_guard,
+-- agregada por 056)
 CREATE TABLE graduation_records (
   id INT PRIMARY KEY AUTO_INCREMENT,
   code VARCHAR(20) NOT NULL UNIQUE,
@@ -820,11 +877,14 @@ CREATE TABLE graduation_records (
   deleted_by INT NULL,
   created_by INT NULL,
   updated_by INT NULL,
+  active_guard TINYINT GENERATED ALWAYS AS (IF(deleted_at IS NULL, 1, NULL)) VIRTUAL,
   FOREIGN KEY (student_id) REFERENCES students(id),
-  FOREIGN KEY (academic_year_id) REFERENCES academic_years(id)
+  FOREIGN KEY (academic_year_id) REFERENCES academic_years(id),
+  UNIQUE KEY uq_graduation_records_active (student_id, academic_year_id, active_guard)
 );
 
--- 043_gransif_records
+-- 043_gransif_records (unicidad de filas activas vía active_guard,
+-- agregada por 056)
 CREATE TABLE gransif_records (
   id INT PRIMARY KEY AUTO_INCREMENT,
   code VARCHAR(20) NOT NULL UNIQUE,
@@ -840,38 +900,39 @@ CREATE TABLE gransif_records (
   deleted_by INT NULL,
   created_by INT NULL,
   updated_by INT NULL,
+  active_guard TINYINT GENERATED ALWAYS AS (IF(deleted_at IS NULL, 1, NULL)) VIRTUAL,
   FOREIGN KEY (student_id) REFERENCES students(id),
-  FOREIGN KEY (academic_year_id) REFERENCES academic_years(id)
+  FOREIGN KEY (academic_year_id) REFERENCES academic_years(id),
+  UNIQUE KEY uq_gransif_records_active (student_id, academic_year_id, active_guard)
 );
 
 -- =====================================================
 -- TABLAS DE LOGS Y CONFIGURACIÓN
 -- =====================================================
 
--- 044_activity_logs
+-- 044_activity_logs (record_code ampliado a VARCHAR(100) por 052)
 CREATE TABLE activity_logs (
   id INT PRIMARY KEY AUTO_INCREMENT,
   user_id INT NOT NULL,
   module VARCHAR(50) NOT NULL,
   action VARCHAR(50) NOT NULL,
-  record_code VARCHAR(20),
+  record_code VARCHAR(100),
   details JSON,
   ip VARCHAR(45),
   user_agent VARCHAR(255),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id),
-  INDEX idx_activity_user (user_id),
-  INDEX idx_activity_module (module),
-  INDEX idx_activity_created (created_at)
+  INDEX idx_activity_user_module_created (user_id, module, created_at)
 );
 
--- 045_audit_logs
+-- 045_audit_logs (user_id nullable por 055 para acciones del sistema;
+-- record_code ampliado a VARCHAR(100) por 052)
 CREATE TABLE audit_logs (
   id INT PRIMARY KEY AUTO_INCREMENT,
-  user_id INT NOT NULL,
+  user_id INT UNSIGNED NULL,
   action VARCHAR(50) NOT NULL,
   module VARCHAR(50) NOT NULL,
-  record_code VARCHAR(20),
+  record_code VARCHAR(100),
   `before` JSON,
   `after` JSON,
   reason TEXT,
@@ -879,10 +940,7 @@ CREATE TABLE audit_logs (
   user_agent VARCHAR(255),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id),
-  INDEX idx_audit_user (user_id),
-  INDEX idx_audit_module (module),
-  INDEX idx_audit_record (record_code),
-  INDEX idx_audit_created (created_at)
+  INDEX idx_audit_user_module_record_created (user_id, module, record_code, created_at)
 );
 
 -- 046_system_settings
@@ -912,6 +970,10 @@ CREATE TABLE translations (
 -- =====================================================
 -- ÍNDICES ADICIONALES PARA RENDIMIENTO
 -- =====================================================
+-- Nota: los índices de job de la migración 056
+-- (idx_grade_records_status_deadline e
+-- idx_grade_change_requests_record_status) ya están declarados inline en
+-- sus respectivas tablas.
 
 -- Índices para students
 CREATE INDEX idx_students_branch ON students(branch_id);

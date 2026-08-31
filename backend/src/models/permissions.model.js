@@ -1,5 +1,6 @@
 // FILE: backend/src/models/permissions.model.js
 const db = require('../config/database');
+const { escapeLike } = require('../utils/escapeLike');
 
 const TABLE = 'permissions';
 const FIELDS = [
@@ -13,10 +14,10 @@ function applyPermissionsFilters(query, { search, module, action }) {
   if (search) {
     query.where((builder) => {
       builder
-        .where('code', 'like', `%${search}%`)
-        .orWhere('module', 'like', `%${search}%`)
-        .orWhere('action', 'like', `%${search}%`)
-        .orWhere('description', 'like', `%${search}%`);
+        .where('code', 'like', `%${escapeLike(search)}%`)
+        .orWhere('module', 'like', `%${escapeLike(search)}%`)
+        .orWhere('action', 'like', `%${escapeLike(search)}%`)
+        .orWhere('description', 'like', `%${escapeLike(search)}%`);
     });
   }
   if (module) query.where('module', module);

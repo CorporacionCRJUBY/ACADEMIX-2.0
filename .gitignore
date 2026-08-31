@@ -1,0 +1,32 @@
+# ACADEMIX 2.0 — .gitignore (creado en la corrección de la auditoría 2026-08-31:
+# el repo no tenía ninguno y trackeaba node_modules, .env y PDFs de estudiantes)
+
+# Dependencias
+node_modules/
+
+# Entorno / secretos
+.env
+.env.local
+.env.*.local
+backend/.env
+frontend/.env
+
+# Archivos subidos (contienen PII de estudiantes) y logs
+backend/uploads/
+backend/logs/
+
+# Build del frontend
+frontend/dist/
+
+# Cobertura de tests
+coverage/
+
+# Respaldos de base de datos
+database/backups/
+
+# Sistema operativo / editores
+.DS_Store
+Thumbs.db
+*.log
+.idea/
+.vscode/

@@ -217,7 +217,7 @@ const DataTable = ({
         >
           {visibleActions.map((action, index) => (
             <MenuItem
-              key={index}
+              key={action.label || index}
               disabled={action.disabled ? action.disabled(row) : false}
               onClick={(e) => {
                 e.stopPropagation();
@@ -332,7 +332,7 @@ const DataTable = ({
             )}
 
             {actions.map((action, index) => (
-              <Tooltip key={index} title={action.label}>
+              <Tooltip key={action.label || index} title={action.label}>
                 <IconButton
                   onClick={action.onClick}
                   disabled={action.disabled || loading}

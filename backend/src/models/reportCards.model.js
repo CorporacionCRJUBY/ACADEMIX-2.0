@@ -1,5 +1,6 @@
 // FILE: backend/src/models/reportCards.model.js
 const db = require('../config/database');
+const { escapeLike } = require('../utils/escapeLike');
 
 const TABLE = 'reports';
 const CATEGORY = 'report-cards';
@@ -16,7 +17,7 @@ function applyFilters(query, { search, studentId, academicPeriodId, academicYear
   if (search) {
     query.where((builder) => {
       builder
-        .where('reports.code', 'like', `%${search}%`)
+        .where('reports.code', 'like', `%${escapeLike(search)}%`)
         .orWhereRaw("CONCAT(students.first_name, ' ', students.last_name) like ?", [`%${search}%`]);
     });
   }

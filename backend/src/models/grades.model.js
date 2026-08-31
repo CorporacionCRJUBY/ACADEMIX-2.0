@@ -1,5 +1,6 @@
 // FILE: backend/src/models/grades.model.js
 const db = require('../config/database');
+const { escapeLike } = require('../utils/escapeLike');
 
 const TABLE = 'grade_records';
 const FIELDS = [
@@ -15,8 +16,8 @@ function applyGradeFilters(query, { search, studentId, subjectId, assignmentId, 
   if (search) {
     query.where((builder) => {
       builder
-        .where('grade_records.code', 'like', `%${search}%`)
-        .orWhere('grade_records.grade_letter', 'like', `%${search}%`);
+        .where('grade_records.code', 'like', `%${escapeLike(search)}%`)
+        .orWhere('grade_records.grade_letter', 'like', `%${escapeLike(search)}%`);
     });
   }
   if (studentId) query.where('grade_records.student_id', studentId);

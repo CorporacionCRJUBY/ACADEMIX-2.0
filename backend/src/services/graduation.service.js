@@ -1,7 +1,9 @@
-﻿// FILE: backend/src/services/graduation.service.js
+// FILE: backend/src/services/graduation.service.js
 const AppError = require('../utils/AppError');
+const { scopeFiltersToUserBranches, assertBranchAccess } = require('../utils/branchScope');
 const repository = require('../repositories/graduation.repository');
 const creditsRepository = require('../repositories/credits.repository');
+const studentsRepository = require('../repositories/students.repository');
 const { generateCode } = require('../utils/codeGenerator');
 const auditService = require('./audit.service');
 const { pick } = require('../utils/pick');
@@ -11,10 +13,25 @@ const { pick } = require('../utils/pick');
 // otro campo del body se ignora en vez de llegar crudo al INSERT/UPDATE.
 const ALLOWED_FIELDS = ['student_id', 'academic_year_id', 'graduation_date', 'status', 'requirements_met', 'validation_notes', 'certificate_number'];
 
+// FIX (aislamiento por sede, M3): estos registros no tienen branch_id
+// propio, así que el acceso se valida contra la sede del estudiante
+// referenciado. Lanza 404 (no 403) para no revelar que el registro existe
+// en otra sede.
+async function assertStudentBranchAccess(studentId, user, notFoundMessage) {
+  const student = await studentsRepository.findById(studentId);
+  assertBranchAccess(student, user, notFoundMessage);
+  return student;
+}
+
 const GraduationService = {
   async findAll(filters, user) {
     const { page = 1, pageSize = 20, search, studentId, academicYearId, status } = filters;
-    const queryFilters = { search, studentId, academicYearId, status };
+    // FIX (aislamiento por sede): restringe a los estudiantes de las sedes
+    // del usuario.
+    const queryFilters = scopeFiltersToUserBranches(
+      { search, studentId, academicYearId, status },
+      user
+    );
     const [data, total] = await Promise.all([
       repository.findAll({ ...queryFilters, page, pageSize }),
       repository.count(queryFilters),
@@ -25,10 +42,15 @@ const GraduationService = {
   async findById(id, user) {
     const record = await repository.findById(id);
     if (!record) throw new AppError('Graduation record not found', 404);
+    await assertStudentBranchAccess(record.student_id, user, 'Graduation record not found');
     return record;
   },
 
   async create(payload, user) {
+    // FIX (aislamiento por sede): solo se pueden crear registros de
+    // graduación para estudiantes de las sedes del usuario.
+    if (!payload.student_id) throw new AppError('student_id is required', 400);
+    await assertStudentBranchAccess(payload.student_id, user, 'Student not found');
     const code = await generateCode('GRD');
     const data = {
       ...pick(payload, ALLOWED_FIELDS),
@@ -55,6 +77,12 @@ const GraduationService = {
   async update(id, payload, user) {
     const existing = await repository.findById(id);
     if (!existing) throw new AppError('Graduation record not found', 404);
+    await assertStudentBranchAccess(existing.student_id, user, 'Graduation record not found');
+    // Si el update intenta reasignar el registro a otro estudiante, ese
+    // estudiante también debe estar en las sedes del usuario.
+    if (payload.student_id && Number(payload.student_id) !== Number(existing.student_id)) {
+      await assertStudentBranchAccess(payload.student_id, user, 'Student not found');
+    }
     
     const before = { ...existing };
     await repository.update(id, { ...pick(payload, ALLOWED_FIELDS), updated_by: user.id });
@@ -76,6 +104,7 @@ const GraduationService = {
   async softDelete(id, user) {
     const existing = await repository.findById(id);
     if (!existing) throw new AppError('Graduation record not found', 404);
+    await assertStudentBranchAccess(existing.student_id, user, 'Graduation record not found');
     
     await repository.softDelete(id, user.id);
     
@@ -96,6 +125,7 @@ const GraduationService = {
     // hardcoded { validated: true, requirementsMet: true } regardless of the
     // student's actual record, so clicking "Validate" in the UI looked like
     // it worked but silently did nothing.
+    await assertStudentBranchAccess(studentId, user, 'Student not found');
     const records = await repository.findByStudent(studentId);
     const record = records.find((r) => r.status === 'PENDING') || records[0];
     if (!record) {

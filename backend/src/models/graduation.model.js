@@ -1,5 +1,6 @@
 // FILE: backend/src/models/graduation.model.js
 const db = require('../config/database');
+const { escapeLike } = require('../utils/escapeLike');
 
 const TABLE = 'graduation_records';
 const FIELDS = [
@@ -10,18 +11,21 @@ const FIELDS = [
 
 // Shared by findAll() and count() so the row query and the count query for
 // pagination never drift out of sync with each other.
-function applyGraduationFilters(query, { search, studentId, academicYearId, status }) {
+function applyGraduationFilters(query, { search, studentId, academicYearId, status, branchIds }) {
   if (search) {
     query.where((builder) => {
       builder
-        .where('graduation_records.code', 'like', `%${search}%`)
-        .orWhere('students.first_name', 'like', `%${search}%`)
-        .orWhere('students.last_name', 'like', `%${search}%`);
+        .where('graduation_records.code', 'like', `%${escapeLike(search)}%`)
+        .orWhere('students.first_name', 'like', `%${escapeLike(search)}%`)
+        .orWhere('students.last_name', 'like', `%${escapeLike(search)}%`);
     });
   }
   if (studentId) query.where('graduation_records.student_id', studentId);
   if (academicYearId) query.where('graduation_records.academic_year_id', academicYearId);
   if (status) query.where('graduation_records.status', status);
+  // FIX (aislamiento por sede): estos registros no tienen branch_id propio;
+  // la sede se hereda del estudiante asociado.
+  if (branchIds) query.whereIn('students.branch_id', branchIds);
   return query;
 }
 
@@ -30,7 +34,7 @@ const Graduation = {
   FIELDS,
 
   findAll(filters = {}) {
-    const { search, studentId, academicYearId, status, page, pageSize } = filters;
+    const { search, studentId, academicYearId, status, branchIds, page, pageSize } = filters;
     let query = db(TABLE)
       .whereNull('graduation_records.deleted_at')
       .leftJoin('students', 'students.id', 'graduation_records.student_id')
@@ -38,7 +42,7 @@ const Graduation = {
         'graduation_records.*',
         db.raw("CONCAT(students.first_name, ' ', students.last_name) as student_name")
       );
-    applyGraduationFilters(query, { search, studentId, academicYearId, status });
+    applyGraduationFilters(query, { search, studentId, academicYearId, status, branchIds });
 
     if (page && pageSize) {
       const offset = (page - 1) * pageSize;
@@ -49,11 +53,11 @@ const Graduation = {
   },
 
   async count(filters = {}) {
-    const { search, studentId, academicYearId, status } = filters;
+    const { search, studentId, academicYearId, status, branchIds } = filters;
     let query = db(TABLE)
       .whereNull('graduation_records.deleted_at')
       .leftJoin('students', 'students.id', 'graduation_records.student_id');
-    applyGraduationFilters(query, { search, studentId, academicYearId, status });
+    applyGraduationFilters(query, { search, studentId, academicYearId, status, branchIds });
     const [{ total }] = await query.count({ total: 'graduation_records.id' });
     return Number(total);
   },

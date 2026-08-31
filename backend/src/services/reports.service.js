@@ -1,8 +1,6 @@
 // FILE: backend/src/services/reports.service.js
 const AppError = require('../utils/AppError');
 const repository = require('../repositories/reports.repository');
-const { generateCode } = require('../utils/codeGenerator');
-const auditService = require('./audit.service');
 
 // NOTA DE SEGURIDAD: pdf_path/pdf_url apuntaban a rutas de servidor o a la
 // antigua carpeta pública /uploads (ya eliminada). Nunca deben llegar al

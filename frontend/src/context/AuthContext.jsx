@@ -110,14 +110,30 @@ export const AuthProvider = ({ children }) => {
     return response.data; // { secret, otpauthUrl, qrCodeDataUrl }
   }, []);
 
+  // FIX (auditoria hallazgo bajo B11): refreshUser se declara ANTES de las
+  // funciones que lo usan (confirmTwoFactor/disableTwoFactor) para poder
+  // incluirlo correctamente en sus dependencias.
+  // Obtener datos actualizados del usuario
+  const refreshUser = useCallback(async () => {
+    try {
+      const response = await api.get('/auth/me');
+      const userData = response.data;
+      localStorage.setItem('user', JSON.stringify(userData));
+      setUser(userData);
+      return userData;
+    } catch (err) {
+      console.error('Error al refrescar usuario:', err);
+      return null;
+    }
+  }, []);
+
   const confirmTwoFactor = useCallback(
     async (code) => {
       const response = await api.post('/auth/2fa/confirm', { code });
       await refreshUser();
       return response.data; // { backupCodes }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
+    [refreshUser]
   );
 
   const disableTwoFactor = useCallback(
@@ -125,8 +141,7 @@ export const AuthProvider = ({ children }) => {
       await api.post('/auth/2fa/disable', { password });
       await refreshUser();
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
+    [refreshUser]
   );
 
   const regenerateBackupCodes = useCallback(async (password) => {
@@ -177,20 +192,6 @@ export const AuthProvider = ({ children }) => {
     },
     [user]
   );
-
-  // Obtener datos actualizados del usuario
-  const refreshUser = useCallback(async () => {
-    try {
-      const response = await api.get('/auth/me');
-      const userData = response.data;
-      localStorage.setItem('user', JSON.stringify(userData));
-      setUser(userData);
-      return userData;
-    } catch (err) {
-      console.error('Error al refrescar usuario:', err);
-      return null;
-    }
-  }, []);
 
   const value = {
     user,

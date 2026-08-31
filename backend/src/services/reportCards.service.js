@@ -10,11 +10,19 @@ const pdfService = require('./pdf.service');
 const { pick } = require('../utils/pick');
 // FIX (auditoria hallazgo C1 - aislamiento por sede)
 const { scopeFiltersToUserBranches, assertBranchAccess } = require('../utils/branchScope');
+// SEGURIDAD (auditoria 2026-08-31, crítico C3): contención de rutas
+const { resolveWithinRoot } = require('../utils/safePath');
+
+const uploadsRoot = path.resolve(__dirname, '../../uploads');
 
 // FIX (auditoria hallazgo #5 - mass assignment): whitelist explícita de
 // columnas reales de la tabla que el cliente puede escribir. Cualquier
 // otro campo del body se ignora en vez de llegar crudo al INSERT/UPDATE.
-const ALLOWED_FIELDS = ['category', 'student_id', 'academic_period_id', 'academic_year_id', 'report_date', 'status', 'version_number', 'pdf_path', 'pdf_url', 'generated_by', 'notes'];
+// SEGURIDAD (crítico C3): pdf_path/pdf_url/generated_by NO son escribibles
+// por el cliente — preview() sirve pdf_path con createReadStream y
+// aceptarlos permitía leer cualquier archivo del servidor. Solo generate()
+// (server-side) los fija.
+const ALLOWED_FIELDS = ['category', 'student_id', 'academic_period_id', 'academic_year_id', 'report_date', 'status', 'version_number', 'notes'];
 
 // NOTA DE SEGURIDAD: pdf_path es una ruta absoluta del servidor y pdf_url
 // apuntaba a la antigua carpeta pública /uploads (ya eliminada, ver app.js).
@@ -218,8 +226,12 @@ const ReportCardsService = {
       existing = await repository.findById(id);
     }
 
+    // SEGURIDAD (crítico C3): el stream solo se abre si pdf_path está
+    // contenido en uploads/ (protege también contra filas legacy).
+    const containedPdf = resolveWithinRoot(uploadsRoot, existing.pdf_path);
+
     return {
-      stream: fs.createReadStream(existing.pdf_path),
+      stream: fs.createReadStream(containedPdf),
       filename: `report_card_${existing.code}.pdf`,
       mimeType: 'application/pdf'
     };

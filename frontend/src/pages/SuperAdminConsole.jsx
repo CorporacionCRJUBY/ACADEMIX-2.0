@@ -20,8 +20,6 @@ import {
   Gavel as RolesIcon,
   Lock as PermissionsIcon,
   Description as AuditIcon,
-  Translate as TranslateIcon,
-  Backup as BackupIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
@@ -37,7 +35,7 @@ const SuperAdminConsolePage = () => {
       icon: <BranchesIcon sx={{ fontSize: 40 }} />,
       description: t('admin.branchesDesc'),
       path: '/branches',
-      color: 'linear-gradient(135deg, #7C3AED 0%, #4B1C71 100%)',
+      color: 'linear-gradient(135deg, #7C3AED 0%, #6423C4 100%)',
     },
     {
       title: t('admin.users'),
@@ -79,22 +77,11 @@ const SuperAdminConsolePage = () => {
       icon: <SecurityIcon sx={{ fontSize: 40 }} />,
       description: t('admin.activityDesc'),
       path: '/activity',
-      color: 'linear-gradient(135deg, #B47AE2 0%, #4B1C71 100%)',
+      color: 'linear-gradient(135deg, #B47AE2 0%, #6423C4 100%)',
     },
-    {
-      title: t('admin.translations'),
-      icon: <TranslateIcon sx={{ fontSize: 40 }} />,
-      description: t('admin.translationsDesc'),
-      path: '/translations',
-      color: 'linear-gradient(135deg, #E07BC0 0%, #6423C4 100%)',
-    },
-    {
-      title: t('admin.backup'),
-      icon: <BackupIcon sx={{ fontSize: 40 }} />,
-      description: t('admin.backupDesc'),
-      path: '/backup',
-      color: 'linear-gradient(135deg, #8B84A0 0%, #4B1C71 100%)',
-    },
+    // FIX (auditoria hallazgo medio M1): las tarjetas "Translations" y
+    // "Backup" navegaban a /translations y /backup, rutas que no existen en
+    // App.jsx, así que se eliminaron de la consola.
   ];
 
   return (
@@ -133,7 +120,7 @@ const SuperAdminConsolePage = () => {
                 display: 'flex',
                 flexDirection: 'column',
                 transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                '&:hover': { transform: 'translateY(-3px)', boxShadow: (t) => t.academix?.shadowLg },
+                '&:hover': { transform: 'translateY(-3px)', boxShadow: (theme) => theme.academix?.shadowLg },
               }}
             >
               <CardContent sx={{ flexGrow: 1 }}>

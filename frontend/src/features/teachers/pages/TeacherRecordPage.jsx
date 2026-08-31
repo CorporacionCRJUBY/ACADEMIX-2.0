@@ -131,7 +131,7 @@ const TeacherRecordPage = () => {
       <Paper sx={{ p: 3, mb: 3, borderTop: '4px solid', borderColor: 'primary.main' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Avatar sx={{ width: 72, height: 72, bgcolor: '#DCC9F0', color: '#4B1C71', fontSize: '1.5rem', fontWeight: 'bold' }}>
+            <Avatar sx={{ width: 72, height: 72, bgcolor: '#d1b3ff', color: '#241035', fontSize: '1.5rem', fontWeight: 'bold' }}>
               {initials || '?'}
             </Avatar>
             <Box>
@@ -161,7 +161,7 @@ const TeacherRecordPage = () => {
 
       {tabIndex === 0 && (
         <Paper sx={{ p: 3 }}>
-          <Typography variant="h6" sx={{ color: '#4B1C71', fontWeight: 700, mb: 2 }}>{t('teachers.personalInfo')}</Typography>
+          <Typography variant="h6" sx={{ color: '#d1b3ff', fontWeight: 700, mb: 2 }}>{t('teachers.personalInfo')}</Typography>
           <Divider sx={{ mb: 2 }} />
           <Grid container spacing={2}>
             <Grid item xs={12} md={4}>
@@ -190,7 +190,7 @@ const TeacherRecordPage = () => {
 
       {tabIndex === 1 && (
         <Paper sx={{ p: 3 }}>
-          <Typography variant="h6" sx={{ color: '#4B1C71', fontWeight: 700, mb: 2 }}>{t('teachers.assignments')}</Typography>
+          <Typography variant="h6" sx={{ color: '#d1b3ff', fontWeight: 700, mb: 2 }}>{t('teachers.assignments')}</Typography>
           <Divider sx={{ mb: 2 }} />
           {loadingAssignments ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>

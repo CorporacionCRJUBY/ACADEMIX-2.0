@@ -74,7 +74,7 @@ const generateCode = async (prefix) => {
 
     const sequenceStr = String(nextNumber).padStart(6, '0');
     return `${cleanPrefix}-${year}-${sequenceStr}`;
-  } catch (error) {
+  } catch {
     // Fallback seguro en caso de contingencia
     const timestamp = Date.now().toString().slice(-6);
     return `${cleanPrefix}-${year}-${timestamp}`;

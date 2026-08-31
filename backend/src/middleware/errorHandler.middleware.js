@@ -1,5 +1,6 @@
 // FILE: backend/src/middleware/errorHandler.middleware.js
 const logger = require('../utils/logger');
+const AppError = require('../utils/AppError');
 
 /**
  * Códigos de error por defecto según el status HTTP, usados cuando el
@@ -25,15 +26,33 @@ const DEFAULT_CODE_BY_STATUS = {
  * @param {Function} next - Express next
  */
 const errorHandler = (err, req, res, next) => {
+  // Restricciones UNIQUE de la base (migración 056 y existentes): traducir
+  // el error crudo del driver a un 409 de negocio en vez de un 500 que
+  // además revelaría SQL/internals.
+  if (err.errno === 1062 || err.code === 'ER_DUP_ENTRY') {
+    err = new AppError('A record with the same unique data already exists', 409, 'DUPLICATE_RECORD');
+  }
+
   // Determinar código de error
   const status = err.status || err.statusCode || 500;
   const code = err.code || DEFAULT_CODE_BY_STATUS[status] || 'INTERNAL_ERROR';
-  const message = err.message || 'An unexpected error occurred';
 
-  // Loguear errores internos del servidor (status >= 500)
+  // SEGURIDAD (bajo B4): los mensajes crudos de errores 5xx inesperados
+  // (SQL, driver, TypeError...) pueden revelar internals de la base de
+  // datos o del servidor. Solo los AppError lanzados a propósito se
+  // devuelven tal cual; el resto recibe un mensaje genérico. El detalle
+  // real queda igualmente en los logs de abajo.
+  const isOperational = err instanceof AppError;
+  const message = (status >= 500 && !isOperational)
+    ? 'An unexpected error occurred'
+    : (err.message || 'An unexpected error occurred');
+
+  // Loguear errores internos del servidor (status >= 500). A los logs va el
+  // mensaje REAL aunque al cliente se le haya mandado el genérico.
+  const logMessage = err.message || message;
   if (status >= 500) {
     logger.error({
-      message: `[${code}] ${message}`,
+      message: `[${code}] ${logMessage}`,
       stack: err.stack,
       path: req.path,
       method: req.method,
@@ -43,7 +62,7 @@ const errorHandler = (err, req, res, next) => {
   } else {
     // Errores de cliente (400-499) se loguean como warning
     logger.warn({
-      message: `[${code}] ${message}`,
+      message: `[${code}] ${logMessage}`,
       path: req.path,
       method: req.method,
       user: req.user?.id || 'anonymous',

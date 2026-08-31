@@ -2,7 +2,7 @@
 const fs = require('fs');
 const path = require('path');
 const AppError = require('../utils/AppError');
-const { scopeFiltersToUserBranches, assertBranchAccess } = require('../utils/branchScope');
+const { scopeFiltersToUserBranches, assertBranchAccess, assertBranchForCreate, assertBranchChangeAllowed } = require('../utils/branchScope');
 const repository = require('../repositories/students.repository');
 const { generateCode } = require('../utils/codeGenerator');
 const auditService = require('./audit.service');
@@ -18,11 +18,17 @@ const gpaRepository = require('../repositories/gpa.repository');
 const previousSchoolsRepository = require('../repositories/previousSchools.repository');
 const statusHistoryRepository = require('../repositories/studentStatusHistory.repository');
 const { pick } = require('../utils/pick');
+// SEGURIDAD (auditoria 2026-08-31, crítico C2): contención de rutas
+const { resolveWithinRoot } = require('../utils/safePath');
 
 // FIX (auditoria hallazgo #5 - mass assignment): whitelist explícita de
 // columnas reales de la tabla que el cliente puede escribir. Cualquier
 // otro campo del body se ignora en vez de llegar crudo al INSERT/UPDATE.
-const ALLOWED_FIELDS = ['user_id', 'first_name', 'middle_name', 'last_name', 'second_last_name', 'identification_type', 'identification_number', 'photo_url', 'email', 'phone', 'address', 'date_of_birth', 'gender', 'grade', 'section', 'branch_id', 'academic_year_id', 'enrollment_date', 'graduation_year', 'status', 'notes'];
+const ALLOWED_FIELDS = ['user_id', 'first_name', 'middle_name', 'last_name', 'second_last_name', 'identification_type', 'identification_number', 'email', 'phone', 'address', 'date_of_birth', 'gender', 'grade', 'section', 'branch_id', 'academic_year_id', 'enrollment_date', 'graduation_year', 'status', 'notes'];
+// SEGURIDAD (auditoria 2026-08-31, crítico C2): photo_url NO es escribible
+// por el cliente — path.join sin contención permitía path traversal vía
+// PUT /students/:id con photo_url="/uploads/../../archivo". Solo
+// uploadPhoto() puede fijarla; getPhoto() además valida contención.
 
 const uploadsRoot = path.resolve(__dirname, '../../uploads');
 
@@ -42,7 +48,7 @@ const safe = async (promise, fallback) => {
   try {
     const result = await promise;
     return result === undefined || result === null ? fallback : result;
-  } catch (err) {
+  } catch {
     return fallback;
   }
 };
@@ -146,6 +152,9 @@ const StudentsService = {
   },
 
   async create(payload, user) {
+    // SEGURIDAD (medio M1): un usuario solo puede crear estudiantes en sus
+    // propias sedes (SUPER_ADMIN en cualquiera).
+    assertBranchForCreate(payload, user);
     const code = await generateCode('STU');
     const data = {
       ...pick(payload, ALLOWED_FIELDS),
@@ -173,6 +182,8 @@ const StudentsService = {
   async update(id, payload, user) {
     const existing = await repository.findById(id);
     assertBranchAccess(existing, user, 'Student not found');
+    // FIX (aislamiento por sede): impide mover al estudiante a una sede ajena.
+    assertBranchChangeAllowed(payload, user);
 
     const before = { ...existing };
     await repository.update(id, { ...pick(payload, ALLOWED_FIELDS), updated_by: user.id });
@@ -258,8 +269,9 @@ const StudentsService = {
     assertBranchAccess(existing, user, 'Student not found');
     if (!existing.photo_url) throw new AppError('Student has no photo', 404);
 
-    const relativePath = existing.photo_url.replace(/^\/uploads\//, '');
-    const filePath = path.join(uploadsRoot, relativePath);
+    // SEGURIDAD (crítico C2): resolveWithinRoot rechaza cualquier ruta que
+    // escape de uploads/ (p. ej. "../"), cerrando el path traversal.
+    const filePath = resolveWithinRoot(uploadsRoot, existing.photo_url);
     if (!fs.existsSync(filePath)) throw new AppError('Photo file not found on server', 404);
 
     return {

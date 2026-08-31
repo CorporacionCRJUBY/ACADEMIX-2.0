@@ -1,5 +1,5 @@
 // FILE: backend/src/services/subjects.service.js
-const AppError = require('../utils/AppError');
+const { scopeFiltersToUserBranches, assertBranchAccess, assertBranchForCreate, assertBranchChangeAllowed } = require('../utils/branchScope');
 const repository = require('../repositories/subjects.repository');
 const { generateCode } = require('../utils/codeGenerator');
 const auditService = require('./audit.service');
@@ -13,7 +13,11 @@ const ALLOWED_FIELDS = ['name', 'description', 'grade', 'branch_id', 'credits', 
 const SubjectsService = {
   async findAll(filters, user) {
     const { page = 1, pageSize = 20, name, code, grade, branchId, status, search } = filters;
-    const queryFilters = { name, code, grade, branchId, status, search };
+    // FIX (aislamiento por sede): restringe a las sedes del usuario.
+    const queryFilters = scopeFiltersToUserBranches(
+      { name, code, grade, branchId, status, search },
+      user
+    );
     const [data, total] = await Promise.all([
       repository.findAll({ ...queryFilters, page, pageSize }),
       repository.count(queryFilters),
@@ -23,11 +27,14 @@ const SubjectsService = {
 
   async findById(id, user) {
     const record = await repository.findById(id);
-    if (!record) throw new AppError('Subject not found', 404);
+    assertBranchAccess(record, user, 'Subject not found');
     return record;
   },
 
   async create(payload, user) {
+    // FIX (aislamiento por sede): valida que la sede del nuevo registro sea
+    // una de las sedes asignadas al usuario.
+    assertBranchForCreate(payload, user);
     const code = await generateCode('SUB');
     const data = {
       ...pick(payload, ALLOWED_FIELDS),
@@ -53,7 +60,9 @@ const SubjectsService = {
 
   async update(id, payload, user) {
     const existing = await repository.findById(id);
-    if (!existing) throw new AppError('Subject not found', 404);
+    assertBranchAccess(existing, user, 'Subject not found');
+    // FIX (aislamiento por sede): impide mover la materia a una sede ajena.
+    assertBranchChangeAllowed(payload, user);
     
     const before = { ...existing };
     await repository.update(id, { ...pick(payload, ALLOWED_FIELDS), updated_by: user.id });
@@ -74,7 +83,7 @@ const SubjectsService = {
 
   async softDelete(id, user) {
     const existing = await repository.findById(id);
-    if (!existing) throw new AppError('Subject not found', 404);
+    assertBranchAccess(existing, user, 'Subject not found');
     
     await repository.softDelete(id, user.id);
     

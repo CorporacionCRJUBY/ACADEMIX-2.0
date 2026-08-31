@@ -1,5 +1,6 @@
 // FILE: backend/src/models/academicYears.model.js
 const db = require('../config/database');
+const { escapeLike } = require('../utils/escapeLike');
 
 const TABLE = 'academic_years';
 const FIELDS = [
@@ -19,8 +20,8 @@ const AcademicYears = {
     if (search) {
       query = query.where((builder) => {
         builder
-          .where('name', 'like', `%${search}%`)
-          .orWhere('code', 'like', `%${search}%`);
+          .where('name', 'like', `%${escapeLike(search)}%`)
+          .orWhere('code', 'like', `%${escapeLike(search)}%`);
       });
     }
 
@@ -42,8 +43,8 @@ const AcademicYears = {
     if (search) {
       query = query.where((builder) => {
         builder
-          .where('name', 'like', `%${search}%`)
-          .orWhere('code', 'like', `%${search}%`);
+          .where('name', 'like', `%${escapeLike(search)}%`)
+          .orWhere('code', 'like', `%${escapeLike(search)}%`);
       });
     }
 

@@ -1,5 +1,6 @@
 // FILE: backend/src/models/reports.model.js
 const db = require('../config/database');
+const { escapeLike } = require('../utils/escapeLike');
 
 const TABLE = 'reports';
 const FIELDS = [
@@ -15,9 +16,9 @@ function applyReportsFilters(query, { search, category, studentId, academicPerio
   if (search) {
     query.where((builder) => {
       builder
-        .where('reports.code', 'like', `%${search}%`)
-        .orWhere('students.first_name', 'like', `%${search}%`)
-        .orWhere('students.last_name', 'like', `%${search}%`);
+        .where('reports.code', 'like', `%${escapeLike(search)}%`)
+        .orWhere('students.first_name', 'like', `%${escapeLike(search)}%`)
+        .orWhere('students.last_name', 'like', `%${escapeLike(search)}%`);
     });
   }
   if (category) query.where('reports.category', category);

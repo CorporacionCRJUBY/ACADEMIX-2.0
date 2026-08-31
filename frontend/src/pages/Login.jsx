@@ -10,8 +10,6 @@ import {
   CircularProgress,
   InputAdornment,
   IconButton,
-  FormControlLabel,
-  Checkbox,
 } from '@mui/material';
 import { Visibility, VisibilityOff, Email, Lock } from '@mui/icons-material';
 import AuthLayout from '../layouts/AuthLayout';
@@ -24,7 +22,8 @@ const LoginPage = () => {
   const { login, verifyTwoFactor } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
+  // FIX (auditoria hallazgo bajo B6): el estado rememberMe y su checkbox eran
+  // código muerto (nunca se enviaban al backend), así que se eliminaron.
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -178,25 +177,11 @@ const LoginPage = () => {
           } }}
         />
 
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1 }}>
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                color="primary"
-              />
-            }
-            label={t('auth.rememberMe')}
-          />
-          <Button
-            variant="text"
-            onClick={() => navigate('/forgot-password')}
-            sx={{ textTransform: 'none' }}
-          >
-            {t('auth.forgotPassword')}
-          </Button>
-        </Box>
+        {/* FIX (auditoria hallazgo medio M1): el enlace "forgot password"
+            navegaba a /forgot-password, ruta que no existe en App.jsx. La
+            función de recuperación de contraseña no está implementada, así
+            que se eliminó el botón (junto con el checkbox rememberMe del
+            hallazgo B6, que era código muerto). */}
 
         <Button
           type="submit"

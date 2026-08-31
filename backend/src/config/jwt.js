@@ -9,6 +9,15 @@ const config = require('./env');
 // token (jti) que se pueda meter en una lista de exclusión (ver
 // repositories/revokedTokens.repository.js) y consultar en cada request.
 // Antes ningún token llevaba jti, así que no había nada que revocar.
+// SEGURIDAD (hardening 2026-08-31): emisor/audiencia fijan el contexto de
+// validez de los tokens. Aunque otro sistema compartiera (por error) la
+// misma clave, sus tokens no serían aceptados aquí y viceversa. Efecto
+// colateral asumido: tras desplegar esta versión, los tokens emitidos antes
+// (sin iss/aud) dejan de ser válidos — refresh fuerza re-login una vez.
+const TOKEN_ISSUER = 'academix-api';
+const TOKEN_AUDIENCE = 'academix-app';
+const SIGN_OPTS = { issuer: TOKEN_ISSUER, audience: TOKEN_AUDIENCE };
+
 const sign = (payload, expiresIn = config.JWT_EXPIRES_IN) => {
   // FIX (auditoria hallazgo bajo #2 - 2FA): se agrega `type: 'access'` al
   // payload. Antes, un token cualquiera firmado con JWT_SECRET era válido
@@ -17,7 +26,7 @@ const sign = (payload, expiresIn = config.JWT_EXPIRES_IN) => {
   // más abajo), es importante que un desafío 2FA nunca pueda colarse como
   // si fuera una sesión real, ni viceversa. `verify()` rechaza cualquier
   // token cuyo `type` no sea exactamente 'access'.
-  return jwt.sign({ ...payload, type: 'access', jti: crypto.randomUUID() }, config.JWT_SECRET, { expiresIn });
+  return jwt.sign({ ...payload, type: 'access', jti: crypto.randomUUID() }, config.JWT_SECRET, { ...SIGN_OPTS, expiresIn });
 };
 
 /**
@@ -26,8 +35,13 @@ const sign = (payload, expiresIn = config.JWT_EXPIRES_IN) => {
  * @returns {Object} Payload decodificado
  * @throws {JsonWebTokenError} Si el token es inválido, expiró, o no es del tipo esperado
  */
+// SEGURIDAD (bajo B7): fijar el algoritmo aceptado evita ataques de
+// confusión de algoritmo ('none', HS/RS). Solo firmamos con HS256.
+// iss/aud deben coincidir con los de emisión (SIGN_OPTS).
+const VERIFY_OPTS = { algorithms: ['HS256'], issuer: TOKEN_ISSUER, audience: TOKEN_AUDIENCE };
+
 const verify = (token) => {
-  const decoded = jwt.verify(token, config.JWT_SECRET);
+  const decoded = jwt.verify(token, config.JWT_SECRET, VERIFY_OPTS);
   if (decoded.type !== 'access') {
     const err = new Error('Invalid token type');
     err.name = 'JsonWebTokenError';
@@ -42,7 +56,7 @@ const verify = (token) => {
  * @returns {string} Refresh token firmado
  */
 const signRefresh = (payload) => {
-  return jwt.sign({ ...payload, type: 'refresh', jti: crypto.randomUUID() }, config.JWT_REFRESH_SECRET, { expiresIn: '7d' });
+  return jwt.sign({ ...payload, type: 'refresh', jti: crypto.randomUUID() }, config.JWT_REFRESH_SECRET, { ...SIGN_OPTS, expiresIn: '7d' });
 };
 
 /**
@@ -52,7 +66,7 @@ const signRefresh = (payload) => {
  * @throws {JsonWebTokenError} Si el token es inválido, expiró, o no es del tipo esperado
  */
 const verifyRefresh = (token) => {
-  const decoded = jwt.verify(token, config.JWT_REFRESH_SECRET);
+  const decoded = jwt.verify(token, config.JWT_REFRESH_SECRET, VERIFY_OPTS);
   if (decoded.type !== 'refresh') {
     const err = new Error('Invalid token type');
     err.name = 'JsonWebTokenError';
@@ -70,11 +84,11 @@ const verifyRefresh = (token) => {
 // `type: '2fa_challenge'`, así que aunque un atacante lo capturara no
 // podría usarlo como si fuera un access token (verify() lo rechazaría).
 const signTwoFactorChallenge = (payload) => {
-  return jwt.sign({ ...payload, type: '2fa_challenge', jti: crypto.randomUUID() }, config.JWT_SECRET, { expiresIn: '5m' });
+  return jwt.sign({ ...payload, type: '2fa_challenge', jti: crypto.randomUUID() }, config.JWT_SECRET, { ...SIGN_OPTS, expiresIn: '5m' });
 };
 
 const verifyTwoFactorChallenge = (token) => {
-  const decoded = jwt.verify(token, config.JWT_SECRET);
+  const decoded = jwt.verify(token, config.JWT_SECRET, VERIFY_OPTS);
   if (decoded.type !== '2fa_challenge') {
     const err = new Error('Invalid token type');
     err.name = 'JsonWebTokenError';

@@ -2,6 +2,7 @@
 const db = require('../config/database');
 const AppError = require('../utils/AppError');
 const repository = require('../repositories/grades.repository');
+const studentsRepository = require('../repositories/students.repository');
 const { generateCode } = require('../utils/codeGenerator');
 const { convertToLetterGrade } = require('../utils/gpaCalculator');
 const auditService = require('./audit.service');
@@ -32,6 +33,11 @@ const GradesService = {
   },
 
   async create(payload, user) {
+    // FIX (aislamiento por sede, M3): solo se pueden crear calificaciones
+    // para estudiantes de las sedes del usuario.
+    if (!payload.student_id) throw new AppError('student_id is required', 400);
+    const student = await studentsRepository.findById(payload.student_id);
+    assertBranchAccess(student, user, 'Student not found');
     const code = await generateCode('GRA');
     const gradeLetter = payload.grade_letter || convertToLetterGrade(payload.grade_value);
 

@@ -51,6 +51,7 @@
     "language": "Idioma",
     "back": "Volver",
     "add": "Agregar",
-    "confirm": "Confirmar"
+    "confirm": "Confirmar",
+    "defaultUserName": "Usuario"
   }
 }

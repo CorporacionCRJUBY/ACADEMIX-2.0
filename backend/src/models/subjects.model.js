@@ -1,5 +1,6 @@
 // FILE: backend/src/models/subjects.model.js
 const db = require('../config/database');
+const { escapeLike } = require('../utils/escapeLike');
 
 const TABLE = 'subjects';
 const FIELDS = [
@@ -13,20 +14,24 @@ const Subjects = {
   FIELDS,
 
   findAll(filters = {}) {
-    const { name, code, grade, branchId, status, search, page, pageSize } = filters;
+    const { name, code, grade, branchId, branchIds, status, search, page, pageSize } = filters;
     let query = db(TABLE).whereNull('deleted_at');
 
-    if (name) query = query.where('name', 'like', `%${name}%`);
-    if (code) query = query.where('code', 'like', `%${code}%`);
+    if (name) query = query.where('name', 'like', `%${escapeLike(name)}%`);
+    if (code) query = query.where('code', 'like', `%${escapeLike(code)}%`);
     if (grade) query = query.where('grade', grade);
     if (branchId) query = query.where('branch_id', branchId);
+    // FIX (aislamiento por sede): permite restringir a un conjunto de sedes
+    // (las del usuario autenticado) en vez de solo un branchId opcional que
+    // el cliente podía omitir para ver todas las sedes.
+    if (branchIds) query = query.whereIn('branch_id', branchIds);
     if (status) query = query.where('status', status);
     if (search) {
       query = query.where((builder) => {
         builder
-          .where('name', 'like', `%${search}%`)
-          .orWhere('code', 'like', `%${search}%`)
-          .orWhere('description', 'like', `%${search}%`);
+          .where('name', 'like', `%${escapeLike(search)}%`)
+          .orWhere('code', 'like', `%${escapeLike(search)}%`)
+          .orWhere('description', 'like', `%${escapeLike(search)}%`);
       });
     }
 
@@ -41,20 +46,21 @@ const Subjects = {
   // Mirrors findAll()'s filters so the row query and the count query for
   // pagination never drift out of sync with each other.
   async count(filters = {}) {
-    const { name, code, grade, branchId, status, search } = filters;
+    const { name, code, grade, branchId, branchIds, status, search } = filters;
     let query = db(TABLE).whereNull('deleted_at');
 
-    if (name) query = query.where('name', 'like', `%${name}%`);
-    if (code) query = query.where('code', 'like', `%${code}%`);
+    if (name) query = query.where('name', 'like', `%${escapeLike(name)}%`);
+    if (code) query = query.where('code', 'like', `%${escapeLike(code)}%`);
     if (grade) query = query.where('grade', grade);
     if (branchId) query = query.where('branch_id', branchId);
+    if (branchIds) query = query.whereIn('branch_id', branchIds);
     if (status) query = query.where('status', status);
     if (search) {
       query = query.where((builder) => {
         builder
-          .where('name', 'like', `%${search}%`)
-          .orWhere('code', 'like', `%${search}%`)
-          .orWhere('description', 'like', `%${search}%`);
+          .where('name', 'like', `%${escapeLike(search)}%`)
+          .orWhere('code', 'like', `%${escapeLike(search)}%`)
+          .orWhere('description', 'like', `%${escapeLike(search)}%`);
       });
     }
 

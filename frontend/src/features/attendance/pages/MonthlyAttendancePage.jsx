@@ -26,16 +26,21 @@ import {
   PictureAsPdf as PdfIcon,
   Refresh as RefreshIcon,
 } from '@mui/icons-material';
+import { useTranslation } from 'react-i18next';
 import { api } from '../../../api/axiosClient';
 
+// FIX (auditoria hallazgo bajo B10): los labels de cada estado ahora se
+// toman de i18n (attendance.present/online/excused/unexcused) en la
+// leyenda, así que ya no se guardan aquí textos en inglés.
 const STATUS_COLORS = {
-  P: { bg: 'rgba(52,211,153,0.15)', text: '#34d399', label: 'Present' },
-  O: { bg: 'rgba(96,165,250,0.15)', text: '#60a5fa', label: 'Online' },
-  E: { bg: 'rgba(251,191,36,0.15)', text: '#fbbf24', label: 'Excused' },
-  U: { bg: 'rgba(251,113,133,0.15)', text: '#fb7185', label: 'Unexcused' },
+  P: { bg: 'rgba(52,211,153,0.15)', text: '#34d399' },
+  O: { bg: 'rgba(96,165,250,0.15)', text: '#60a5fa' },
+  E: { bg: 'rgba(251,191,36,0.15)', text: '#fbbf24' },
+  U: { bg: 'rgba(251,113,133,0.15)', text: '#fb7185' },
 };
 
 const MonthlyAttendancePage = () => {
+  const { t } = useTranslation();
   const { assignmentId: routeAssignmentId } = useParams();
   const navigate = useNavigate();
 
@@ -199,8 +204,8 @@ const MonthlyAttendancePage = () => {
             <Table stickyHeader size="small">
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ minWidth: 160, fontWeight: 'bold', bgcolor: '#4B1C71', color: '#FFF' }}>Student</TableCell>
-                  <TableCell sx={{ width: 60, fontWeight: 'bold', bgcolor: '#4B1C71', color: '#FFF', textAlign: 'center' }}>Grade</TableCell>
+                  <TableCell sx={{ minWidth: 160, fontWeight: 'bold', bgcolor: '#6423C4', color: '#FFF' }}>{t('attendance.student')}</TableCell>
+                  <TableCell sx={{ width: 60, fontWeight: 'bold', bgcolor: '#6423C4', color: '#FFF', textAlign: 'center' }}>{t('attendance.grade')}</TableCell>
                   {gridData.days?.map((d) => (
                     <TableCell
                       key={d.dayNumber}
@@ -210,7 +215,7 @@ const MonthlyAttendancePage = () => {
                         textAlign: 'center',
                         fontWeight: 'bold',
                         fontSize: '0.75rem',
-                        bgcolor: d.isWeekend ? 'rgba(255,255,255,0.06)' : '#4b1c71',
+                        bgcolor: d.isWeekend ? 'rgba(255,255,255,0.06)' : '#6423C4',
                         color: d.isWeekend ? 'rgba(241,238,255,0.5)' : '#FFF',
                       }}
                     >
@@ -222,7 +227,7 @@ const MonthlyAttendancePage = () => {
                   <TableCell sx={{ width: 36, textAlign: 'center', fontWeight: 'bold', bgcolor: '#E53935', color: '#FFF' }}>U</TableCell>
                   <TableCell sx={{ width: 36, textAlign: 'center', fontWeight: 'bold', bgcolor: '#FFA726', color: '#FFF' }}>E</TableCell>
                   <TableCell sx={{ width: 36, textAlign: 'center', fontWeight: 'bold', bgcolor: '#4CAF50', color: '#FFF' }}>P</TableCell>
-                  <TableCell sx={{ width: 60, textAlign: 'center', fontWeight: 'bold', bgcolor: '#4B1C71', color: '#FFF' }}>Rate</TableCell>
+                  <TableCell sx={{ width: 60, textAlign: 'center', fontWeight: 'bold', bgcolor: '#6423C4', color: '#FFF' }}>{t('attendance.rate')}</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -277,11 +282,11 @@ const MonthlyAttendancePage = () => {
 
           {/* Legend */}
           <Box sx={{ p: 2, display: 'flex', gap: 2, alignItems: 'center', bgcolor: 'rgba(255,255,255,0.03)', borderTop: '1px solid rgba(167,139,250,0.14)' }}>
-            <Typography variant="body2" sx={{ fontWeight: 'bold' }}>Status Legend (Click cell to change):</Typography>
-            <Chip size="small" label="P = Present" sx={{ bgcolor: 'rgba(52,211,153,0.15)', color: '#34d399', fontWeight: 'bold' }} />
-            <Chip size="small" label="O = Online" sx={{ bgcolor: 'rgba(96,165,250,0.15)', color: '#60a5fa', fontWeight: 'bold' }} />
-            <Chip size="small" label="E = Excused" sx={{ bgcolor: 'rgba(251,191,36,0.15)', color: '#fbbf24', fontWeight: 'bold' }} />
-            <Chip size="small" label="U = Unexcused" sx={{ bgcolor: 'rgba(251,113,133,0.15)', color: '#fb7185', fontWeight: 'bold' }} />
+            <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{t('attendance.legendTitle')}</Typography>
+            <Chip size="small" label={`P = ${t('attendance.present')}`} sx={{ bgcolor: 'rgba(52,211,153,0.15)', color: '#34d399', fontWeight: 'bold' }} />
+            <Chip size="small" label={`O = ${t('attendance.online')}`} sx={{ bgcolor: 'rgba(96,165,250,0.15)', color: '#60a5fa', fontWeight: 'bold' }} />
+            <Chip size="small" label={`E = ${t('attendance.excused')}`} sx={{ bgcolor: 'rgba(251,191,36,0.15)', color: '#fbbf24', fontWeight: 'bold' }} />
+            <Chip size="small" label={`U = ${t('attendance.unexcused')}`} sx={{ bgcolor: 'rgba(251,113,133,0.15)', color: '#fb7185', fontWeight: 'bold' }} />
           </Box>
         </Paper>
       ) : null}

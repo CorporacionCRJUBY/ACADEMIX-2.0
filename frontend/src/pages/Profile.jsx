@@ -1,5 +1,5 @@
 // FILE: frontend/src/pages/Profile.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Box,
@@ -65,6 +65,27 @@ const ProfilePage = () => {
   const [twoFaError, setTwoFaError] = useState(null);
   const [twoFaLoading, setTwoFaLoading] = useState(false);
 
+  // FIX (auditoria hallazgo bajo B7): los setTimeout que ocultan el Alert de
+  // éxito no tenían cleanup. Se guardan en un ref para cancelar el pendiente
+  // antes de programar otro y limpiarlo al desmontar el componente.
+  const successTimeoutRef = useRef(null);
+
+  const showSuccessBrief = () => {
+    setSuccess(true);
+    if (successTimeoutRef.current) {
+      clearTimeout(successTimeoutRef.current);
+    }
+    successTimeoutRef.current = setTimeout(() => setSuccess(false), 3000);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (successTimeoutRef.current) {
+        clearTimeout(successTimeoutRef.current);
+      }
+    };
+  }, []);
+
   const closeTwoFaDialog = () => {
     setTwoFaDialog(null);
     setSetupData(null);
@@ -110,8 +131,7 @@ const ProfilePage = () => {
     try {
       await disableTwoFactor(twoFaPassword);
       closeTwoFaDialog();
-      setSuccess(true);
-      setTimeout(() => setSuccess(false), 3000);
+      showSuccessBrief();
     } catch (err) {
       setTwoFaError(err.message || t('profile.security.invalidPassword'));
     } finally {
@@ -176,8 +196,7 @@ const ProfilePage = () => {
     try {
       await api.put('/users/profile', formData);
       await refreshUser();
-      setSuccess(true);
-      setTimeout(() => setSuccess(false), 3000);
+      showSuccessBrief();
     } catch (error) {
       setError(error.message);
     } finally {
@@ -207,7 +226,7 @@ const ProfilePage = () => {
         new_password: '',
         confirm_password: '',
       });
-      setTimeout(() => setSuccess(false), 3000);
+      showSuccessBrief();
     } catch (error) {
       setError(error.message);
     } finally {

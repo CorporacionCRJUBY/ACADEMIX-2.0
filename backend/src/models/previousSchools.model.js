@@ -1,5 +1,6 @@
 // FILE: backend/src/models/previousSchools.model.js
 const db = require('../config/database');
+const { escapeLike } = require('../utils/escapeLike');
 
 const TABLE = 'previous_schools';
 const FIELDS = [
@@ -15,14 +16,14 @@ function applyPreviousSchoolFilters(query, { search, studentId, schoolName, bran
   if (search) {
     query.where((builder) => {
       builder
-        .where('previous_schools.code', 'like', `%${search}%`)
-        .orWhere('previous_schools.school_name', 'like', `%${search}%`)
-        .orWhere('students.first_name', 'like', `%${search}%`)
-        .orWhere('students.last_name', 'like', `%${search}%`);
+        .where('previous_schools.code', 'like', `%${escapeLike(search)}%`)
+        .orWhere('previous_schools.school_name', 'like', `%${escapeLike(search)}%`)
+        .orWhere('students.first_name', 'like', `%${escapeLike(search)}%`)
+        .orWhere('students.last_name', 'like', `%${escapeLike(search)}%`);
     });
   }
   if (studentId) query.where('previous_schools.student_id', studentId);
-  if (schoolName) query.where('previous_schools.school_name', 'like', `%${schoolName}%`);
+  if (schoolName) query.where('previous_schools.school_name', 'like', `%${escapeLike(schoolName)}%`);
     // FIX (auditoria hallazgo C1): registro pertenece a la sede de su estudiante.
   if (branchIds) query.whereIn('students.branch_id', branchIds);
   return query;

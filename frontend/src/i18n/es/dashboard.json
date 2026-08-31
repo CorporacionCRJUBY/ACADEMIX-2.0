@@ -2,6 +2,7 @@
   "dashboard": {
     "title": "Panel Principal",
     "welcome": "Bienvenido",
+    "subtitle": "Resumen general del sistema académico",
     "recentActivity": "Actividad Reciente",
     "todayAttendance": "Asistencia de Hoy"
   }

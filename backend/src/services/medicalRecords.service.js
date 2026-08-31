@@ -1,6 +1,7 @@
 ﻿// FILE: backend/src/services/medicalRecords.service.js
 const AppError = require('../utils/AppError');
 const repository = require('../repositories/medicalRecords.repository');
+const studentsRepository = require('../repositories/students.repository');
 const { generateCode } = require('../utils/codeGenerator');
 const auditService = require('./audit.service');
 const { pick } = require('../utils/pick');
@@ -38,6 +39,11 @@ const MedicalRecordsService = {
   },
 
   async create(payload, user) {
+    // FIX (aislamiento por sede, M3): solo se pueden crear expedientes para
+    // estudiantes de las sedes del usuario.
+    if (!payload.student_id) throw new AppError('student_id is required', 400);
+    const student = await studentsRepository.findById(payload.student_id);
+    assertBranchAccess(student, user, 'Student not found');
     const code = await generateCode('MED');
     const data = {
       ...pick(payload, ALLOWED_FIELDS),

@@ -27,6 +27,10 @@ module.exports = [
         setInterval: 'readonly',
         clearTimeout: 'readonly',
         clearInterval: 'readonly',
+        URL: 'readonly',
+        URLSearchParams: 'readonly',
+        TextEncoder: 'readonly',
+        TextDecoder: 'readonly',
         // Jest globals for tests/**/*.js
         describe: 'readonly',
         it: 'readonly',
@@ -40,7 +44,7 @@ module.exports = [
       },
     },
     rules: {
-      'no-unused-vars': ['warn', { args: 'none', varsIgnorePattern: '^_' }],
+      'no-unused-vars': ['warn', { args: 'none', varsIgnorePattern: '^_', ignoreRestSiblings: true }],
       'no-undef': 'error',
       'no-console': 'off',
       'no-empty': ['warn', { allowEmptyCatch: true }],

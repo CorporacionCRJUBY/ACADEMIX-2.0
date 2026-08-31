@@ -31,7 +31,9 @@ const AuditService = {
     const afterJson = after ? JSON.stringify(after) : null;
     
     return repository.create({
-      user_id: user.id,
+      // user_id NULL = acción del sistema (jobs programados); la columna es
+      // nullable desde la migración 055.
+      user_id: user?.id ?? null,
       action,
       module,
       record_code: recordCode,

@@ -4,15 +4,22 @@ import PropTypes from 'prop-types';
 import { Box, Typography, Stack } from '@mui/material';
 import { School as SchoolIcon, InsightsRounded, ShieldOutlined, GroupsRounded } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
+import { useTranslation } from 'react-i18next';
+// FIX (auditoria hallazgo medio M4): también el layout de auth muestra los
+// errores de API (p. ej. fallos de login que no sean el 401 gestionado).
+import GlobalErrorSnackbar from '../components/GlobalErrorSnackbar';
 
 const AuthLayout = ({ children, title, subtitle }) => {
   const theme = useTheme();
+  const { t } = useTranslation();
   const gradient = theme.academix?.gradientPrimary || theme.palette.primary.main;
 
+  // FIX (auditoria hallazgo medio M7): textos del panel de marca ahora en
+  // i18n (namespace auth, sección brand) con su versión EN/ES.
   const highlights = [
-    { icon: <InsightsRounded />, text: 'Reportes académicos en tiempo real' },
-    { icon: <GroupsRounded />, text: 'Gestión integral de estudiantes y docentes' },
-    { icon: <ShieldOutlined />, text: 'Roles y permisos con auditoría completa' },
+    { icon: <InsightsRounded />, text: t('auth.brand.highlightReports') },
+    { icon: <GroupsRounded />, text: t('auth.brand.highlightManagement') },
+    { icon: <ShieldOutlined />, text: t('auth.brand.highlightSecurity') },
   ];
 
   return (
@@ -82,10 +89,10 @@ const AuthLayout = ({ children, title, subtitle }) => {
 
           <Box sx={{ position: 'relative' }}>
             <Typography variant="h3" fontWeight={800} sx={{ mb: 2, lineHeight: 1.15 }}>
-              Gestión académica, simplificada.
+              {t('auth.brand.heading')}
             </Typography>
             <Typography variant="body1" sx={{ opacity: 0.85, mb: 4, maxWidth: 380 }}>
-              Un solo lugar para estudiantes, calificaciones, asistencia y todo el ciclo académico de tu institución.
+              {t('auth.brand.description')}
             </Typography>
             <Stack spacing={2}>
               {highlights.map((h) => (
@@ -114,7 +121,7 @@ const AuthLayout = ({ children, title, subtitle }) => {
           </Box>
 
           <Typography variant="caption" sx={{ opacity: 0.6, position: 'relative' }}>
-            © {new Date().getFullYear()} Academix. Todos los derechos reservados.
+            {t('auth.brand.rights', { year: new Date().getFullYear() })}
           </Typography>
         </Box>
 
@@ -167,6 +174,9 @@ const AuthLayout = ({ children, title, subtitle }) => {
           </Box>
         </Box>
       </Box>
+
+      {/* FIX (auditoria hallazgo medio M4): una sola instancia por layout */}
+      <GlobalErrorSnackbar />
     </Box>
   );
 };

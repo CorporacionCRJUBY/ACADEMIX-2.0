@@ -18,6 +18,9 @@
     "checkOut": "Salida",
     "notes": "Notas",
     "monthlyGrid": "Cuadrícula Mensual",
+    "grade": "Grado",
+    "rate": "Tasa",
+    "legendTitle": "Leyenda de estados (haga clic en una celda para cambiar):",
     "saveDaily": "Guardar Asistencia Diaria",
     "confirmDeleteAttendance": "¿Está seguro de que desea eliminar este registro de asistencia?"
   }

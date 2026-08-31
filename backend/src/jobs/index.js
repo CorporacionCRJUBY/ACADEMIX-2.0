@@ -3,6 +3,7 @@ const cron = require('node-cron');
 const { lockExpiredGrades } = require('./gradeLockJob');
 const { archiveOldVersions } = require('./reportArchiveJob');
 const { purgeExpiredRevokedTokens } = require('./revokedTokensCleanupJob');
+const { purgeExpiredLogs } = require('./auditRetentionJob');
 
 /**
  * Inicia todos los jobs programados
@@ -42,6 +43,16 @@ const startJobs = () => {
     }
   });
 
+  // Job 4: Retención de logs de auditoría/actividad - todos los días a las 4:00 AM
+  const auditRetentionTask = cron.schedule('0 4 * * *', async () => {
+    console.log(`[Job:AuditRetention] Ejecutando a las ${new Date().toISOString()}`);
+    try {
+      await purgeExpiredLogs();
+    } catch (error) {
+      console.error('[Job:AuditRetention] Error:', error.message);
+    }
+  });
+
   // Ejecutar jobs inmediatamente al inicio (opcional)
   // Descomentar si se desea ejecutar al arrancar la app
   /*
@@ -60,17 +71,20 @@ const startJobs = () => {
   console.log('  - Grade Lock: cada 15 minutos');
   console.log('  - Report Archive: 2:00 AM diario');
   console.log('  - Revoked Tokens Cleanup: 3:00 AM diario');
+  console.log('  - Audit Retention: 4:00 AM diario');
 
   // Retornar referencias a los tasks por si se necesitan detener
   return {
     gradeLockTask,
     reportArchiveTask,
     revokedTokensCleanupTask,
+    auditRetentionTask,
     stopAll: () => {
       console.log('[Jobs] Deteniendo jobs...');
       gradeLockTask.stop();
       reportArchiveTask.stop();
       revokedTokensCleanupTask.stop();
+      auditRetentionTask.stop();
     },
   };
 };

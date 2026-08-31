@@ -12,7 +12,7 @@ router.use(authenticate);
 router.get('/', authorize('grades.view'), controller.findAll);
 router.get('/:id', authorize('grades.view'), controller.findById);
 router.post('/', authorize('grades.create'), validators.create, validate, controller.create);
-router.post('/:id/request-change', authorize('grades.request_change'), controller.requestChange);
+router.post('/:id/request-change', authorize('grades.request_change'), validators.requestChange, validate, controller.requestChange);
 router.put('/:id', authorize('grades.edit'), validators.update, validate, controller.update);
 router.delete('/:id', authorize('grades.delete'), validators.softDelete, validate, controller.softDelete);
 

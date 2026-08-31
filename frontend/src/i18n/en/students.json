@@ -53,6 +53,7 @@
     "previousSchools": "Previous Schools",
     "cumulativeGpa": "Cumulative GPA",
     "creditsEarned": "Credits Earned",
+    "creditsValue": "{{value}} Credits",
     "attendanceRate": "Attendance Rate",
     "generateReportCard": "Generate Report Card",
     "generateProgressReport": "Generate Progress Report",

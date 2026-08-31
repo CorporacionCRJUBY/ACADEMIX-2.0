@@ -1,5 +1,6 @@
 // FILE: backend/src/models/academicHistory.model.js
 const db = require('../config/database');
+const { escapeLike } = require('../utils/escapeLike');
 
 const TABLE = 'academic_history';
 const FIELDS = [
@@ -17,10 +18,10 @@ function applyAcademicHistoryFilters(query, { search, studentId, academicYearId,
   if (search) {
     query.where((builder) => {
       builder
-        .where('academic_history.code', 'like', `%${search}%`)
-        .orWhere('students.first_name', 'like', `%${search}%`)
-        .orWhere('students.last_name', 'like', `%${search}%`)
-        .orWhere('subjects.name', 'like', `%${search}%`);
+        .where('academic_history.code', 'like', `%${escapeLike(search)}%`)
+        .orWhere('students.first_name', 'like', `%${escapeLike(search)}%`)
+        .orWhere('students.last_name', 'like', `%${escapeLike(search)}%`)
+        .orWhere('subjects.name', 'like', `%${escapeLike(search)}%`);
     });
   }
   if (studentId) query.where('academic_history.student_id', studentId);

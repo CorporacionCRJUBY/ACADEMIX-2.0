@@ -1,5 +1,6 @@
 // FILE: backend/src/models/scholarships.model.js
 const db = require('../config/database');
+const { escapeLike } = require('../utils/escapeLike');
 
 const TABLE = 'scholarships';
 const FIELDS = [
@@ -15,10 +16,10 @@ function applyScholarshipFilters(query, { search, studentId, scholarshipType, st
   if (search) {
     query.where((builder) => {
       builder
-        .where('scholarships.code', 'like', `%${search}%`)
-        .orWhere('students.first_name', 'like', `%${search}%`)
-        .orWhere('students.last_name', 'like', `%${search}%`)
-        .orWhere('scholarships.scholarship_type', 'like', `%${search}%`);
+        .where('scholarships.code', 'like', `%${escapeLike(search)}%`)
+        .orWhere('students.first_name', 'like', `%${escapeLike(search)}%`)
+        .orWhere('students.last_name', 'like', `%${escapeLike(search)}%`)
+        .orWhere('scholarships.scholarship_type', 'like', `%${escapeLike(search)}%`);
     });
   }
   if (studentId) query.where('scholarships.student_id', studentId);

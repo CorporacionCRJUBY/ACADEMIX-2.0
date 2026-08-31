@@ -136,7 +136,7 @@ const ProgressReportFormPage = () => {
     );
   }
 
-  const sectionTitleSx = { color: '#4B1C71', fontWeight: 700, mb: 2 };
+  const sectionTitleSx = { color: '#d1b3ff', fontWeight: 700, mb: 2 };
   // Once generated, a report's status changes only through the "Generate" /
   // "Archive" actions on the list — never by editing this field directly —
   // so we never silently overwrite an official document (per system rules).

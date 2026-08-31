@@ -1,5 +1,6 @@
 // FILE: backend/src/models/guardians.model.js
 const db = require('../config/database');
+const { escapeLike } = require('../utils/escapeLike');
 
 // Bug fix: the real schema (011_create_guardians.js / schema.sql) does NOT
 // have student_id or full_name columns on `guardians` — a guardian is
@@ -24,9 +25,9 @@ function applyGuardianFilters(query, { search, relationship }) {
   if (search) {
     query.where((builder) => {
       builder
-        .where('guardians.code', 'like', `%${search}%`)
-        .orWhere('guardians.first_name', 'like', `%${search}%`)
-        .orWhere('guardians.last_name', 'like', `%${search}%`);
+        .where('guardians.code', 'like', `%${escapeLike(search)}%`)
+        .orWhere('guardians.first_name', 'like', `%${escapeLike(search)}%`)
+        .orWhere('guardians.last_name', 'like', `%${escapeLike(search)}%`);
     });
   }
   if (relationship) query.where('guardians.relationship', relationship);

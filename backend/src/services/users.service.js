@@ -1,7 +1,7 @@
 // FILE: backend/src/services/users.service.js
 const AppError = require('../utils/AppError');
 const bcrypt = require ('bcryptjs');
-const { scopeFiltersToUserBranches, assertBranchAccess } = require('../utils/branchScope');
+const { scopeFiltersToUserBranches, assertBranchAccess, assertBranchForCreate, assertBranchChangeAllowed } = require('../utils/branchScope');
 const repository = require('../repositories/users.repository');
 const rolesRepository = require('../repositories/roles.repository');
 const { generateCode } = require('../utils/codeGenerator');
@@ -53,8 +53,16 @@ const UsersService = {
   },
 
   async create(payload, user) {
+    // FIX (aislamiento por sede): valida que la sede del nuevo usuario sea
+    // una de las sedes asignadas al usuario que lo crea.
+    assertBranchForCreate(payload, user);
     const code = await generateCode('USR');
-    const hashedPassword = await bcrypt.hash(payload.password || 'temp123', 10);
+    // SEGURIDAD (alto A1): nunca usar una contraseña por defecto conocida.
+    // El validador ya exige contraseña fuerte; esto es defensa en profundidad.
+    if (!payload.password) {
+      throw new AppError('Password is required to create a user', 400);
+    }
+    const hashedPassword = await bcrypt.hash(payload.password, 12);
     const data = {
       ...pick(payload, ALLOWED_FIELDS),
       code,
@@ -87,6 +95,8 @@ const UsersService = {
   async update(id, payload, user) {
     const existing = await repository.findById(id);
     assertBranchAccess(existing, user, 'User not found');
+    // FIX (aislamiento por sede): impide mover la cuenta a una sede ajena.
+    assertBranchChangeAllowed(payload, user);
 
     // Defense in depth: even though findById/findAll no longer return the
     // hash to the client, never let a bare `password` field reach the
@@ -119,7 +129,7 @@ const UsersService = {
 
     const before = sanitize(existing);
     if (payload.password) {
-      payload.password = await bcrypt.hash(payload.password, 10);
+      payload.password = await bcrypt.hash(payload.password, 12);
     }
     await repository.update(id, { ...pick(payload, ALLOWED_FIELDS), updated_by: user.id });
     // Bug fix: same sync as create() — if this edit changes role_id, make
@@ -164,11 +174,15 @@ const UsersService = {
   async changePassword(id, currentPassword, newPassword, user) {
     const existing = await repository.findById(id);
     if (!existing) throw new AppError('User not found', 404);
+    // SEGURIDAD (medio M4): sin este control, cualquier usuario con
+    // users.edit podía cambiar la contraseña de un usuario de OTRA sede
+    // (incluido un SUPER_ADMIN) conociendo su contraseña actual.
+    assertBranchAccess(existing, user, 'User not found');
     
     const isValid = await bcrypt.compare(currentPassword, existing.password);
     if (!isValid) throw new AppError('Current password is incorrect', 401);
     
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
     await repository.updatePassword(id, hashedPassword);
     
     await auditService.log({

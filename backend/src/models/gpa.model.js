@@ -1,5 +1,6 @@
 // FILE: backend/src/models/gpa.model.js
 const db = require('../config/database');
+const { escapeLike } = require('../utils/escapeLike');
 
 const TABLE = 'gpa_records';
 const FIELDS = [
@@ -14,9 +15,9 @@ function applyGpaFilters(query, { search, studentId, academicPeriodId, academicY
   if (search) {
     query.where((builder) => {
       builder
-        .where('gpa_records.code', 'like', `%${search}%`)
-        .orWhere('students.first_name', 'like', `%${search}%`)
-        .orWhere('students.last_name', 'like', `%${search}%`);
+        .where('gpa_records.code', 'like', `%${escapeLike(search)}%`)
+        .orWhere('students.first_name', 'like', `%${escapeLike(search)}%`)
+        .orWhere('students.last_name', 'like', `%${escapeLike(search)}%`);
     });
   }
   if (studentId) query.where('gpa_records.student_id', studentId);

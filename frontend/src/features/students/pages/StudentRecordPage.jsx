@@ -165,10 +165,10 @@ const StudentRecordPage = () => {
   return (
     <Box sx={{ p: 3 }} className="print-record">
       {/* Header Profile Card */}
-      <Paper sx={{ p: 3, mb: 3, borderRadius: 3, background: 'linear-gradient(135deg, #7C3AED 0%, #4B1C71 55%, #241035 100%)', color: '#FFF' }} className="no-print-bg">
+      <Paper sx={{ p: 3, mb: 3, borderRadius: 3, background: 'linear-gradient(135deg, #7C3AED 0%, #6423C4 55%, #241035 100%)', color: '#FFF' }} className="no-print-bg">
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 2 }}>
           <Box sx={{ display: 'flex', gap: 3, alignItems: 'center' }}>
-            <Avatar src={photoBlobUrl || undefined} sx={{ width: 80, height: 80, bgcolor: '#DCC9F0', color: '#4B1C71', fontSize: '2rem', fontWeight: 'bold' }}>
+            <Avatar src={photoBlobUrl || undefined} sx={{ width: 80, height: 80, bgcolor: '#d1b3ff', color: '#241035', fontSize: '2rem', fontWeight: 'bold' }}>
               {!photoBlobUrl && `${student.first_name?.[0] || ''}${student.last_name?.[0] || ''}`}
             </Avatar>
             <Box>
@@ -184,7 +184,7 @@ const StudentRecordPage = () => {
             </Box>
           </Box>
           <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }} className="no-print">
-            <Button variant="contained" sx={{ bgcolor: '#FFF', color: '#4B1C71', '&:hover': { bgcolor: 'rgba(124,58,237,0.12)' } }} startIcon={<EditIcon />} onClick={() => navigate(`/students/${student.id}/edit`)}>
+            <Button variant="contained" sx={{ bgcolor: '#FFF', color: '#6423C4', '&:hover': { bgcolor: 'rgba(124,58,237,0.12)' } }} startIcon={<EditIcon />} onClick={() => navigate(`/students/${student.id}/edit`)}>
               {t('common.edit')}
             </Button>
             <Button variant="outlined" sx={{ color: '#FFF', borderColor: '#FFF', '&:hover': { borderColor: '#EEE6F9', bgcolor: 'rgba(255,255,255,0.1)' } }} startIcon={<StatusIcon />} onClick={handleOpenStatusDialog}>
@@ -222,7 +222,7 @@ const StudentRecordPage = () => {
           <Grid item xs={12} md={4}>
             <Card sx={{ height: '100%' }}>
               <CardContent>
-                <Typography variant="h6" sx={{ color: '#4B1C71', fontWeight: 600, mb: 2 }}>{t('students.personalInfo')}</Typography>
+                <Typography variant="h6" sx={{ color: '#d1b3ff', fontWeight: 600, mb: 2 }}>{t('students.personalInfo')}</Typography>
                 <Divider sx={{ mb: 2 }} />
                 <Typography variant="body2" color="textSecondary">{t('students.email')}</Typography>
                 <Typography variant="body1" sx={{ fontWeight: 500, mb: 1.5 }}>{student.email || 'N/A'}</Typography>
@@ -240,25 +240,25 @@ const StudentRecordPage = () => {
           <Grid item xs={12} md={4}>
             <Card sx={{ height: '100%' }}>
               <CardContent>
-                <Typography variant="h6" sx={{ color: '#4B1C71', fontWeight: 600, mb: 2 }}>{t('students.academicInfo')}</Typography>
+                <Typography variant="h6" sx={{ color: '#d1b3ff', fontWeight: 600, mb: 2 }}>{t('students.academicInfo')}</Typography>
                 <Divider sx={{ mb: 2 }} />
                 <Typography variant="body2" color="textSecondary">{t('students.enrollmentDate')}</Typography>
                 <Typography variant="body1" sx={{ fontWeight: 500, mb: 1.5 }}>{formatDate(student.enrollment_date)}</Typography>
                 <Typography variant="body2" color="textSecondary">{t('students.graduationYear')}</Typography>
                 <Typography variant="body1" sx={{ fontWeight: 500, mb: 1.5 }}>{student.graduation_year || 'N/A'}</Typography>
                 <Typography variant="body2" color="textSecondary">{t('students.cumulativeGpa')}</Typography>
-                <Typography variant="h5" sx={{ fontWeight: 700, color: '#4B1C71', mb: 1.5 }}>
+                <Typography variant="h5" sx={{ fontWeight: 700, color: '#d1b3ff', mb: 1.5 }}>
                   {gpa.cumulative_gpa !== null && gpa.cumulative_gpa !== undefined ? Number(gpa.cumulative_gpa).toFixed(2) : '—'} / 4.00
                 </Typography>
                 <Typography variant="body2" color="textSecondary">{t('students.creditsEarned')}</Typography>
-                <Typography variant="h5" sx={{ fontWeight: 700, color: '#4CAF50' }}>{credits.total_earned.toFixed(2)} Credits</Typography>
+                <Typography variant="h5" sx={{ fontWeight: 700, color: '#4CAF50' }}>{t('students.creditsValue', { value: credits.total_earned.toFixed(2) })}</Typography>
               </CardContent>
             </Card>
           </Grid>
           <Grid item xs={12} md={4}>
             <Card sx={{ height: '100%' }}>
               <CardContent>
-                <Typography variant="h6" sx={{ color: '#4B1C71', fontWeight: 600, mb: 2 }}>{t('common.actions')}</Typography>
+                <Typography variant="h6" sx={{ color: '#d1b3ff', fontWeight: 600, mb: 2 }}>{t('common.actions')}</Typography>
                 <Divider sx={{ mb: 2 }} />
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                   <Button variant="outlined" fullWidth onClick={() => navigate(`/progress-reports/new?studentId=${student.id}`)}>
@@ -282,7 +282,7 @@ const StudentRecordPage = () => {
             <Grid item xs={12}>
               <Card>
                 <CardContent>
-                  <Typography variant="h6" sx={{ color: '#4B1C71', fontWeight: 600, mb: 1 }}>{t('students.notes')}</Typography>
+                  <Typography variant="h6" sx={{ color: '#d1b3ff', fontWeight: 600, mb: 1 }}>{t('students.notes')}</Typography>
                   <Typography variant="body1">{student.notes}</Typography>
                 </CardContent>
               </Card>
@@ -294,7 +294,7 @@ const StudentRecordPage = () => {
       {/* 2. Academic & Grades */}
       {tabIndex === 1 && (
         <Paper sx={{ p: 3, borderTop: '4px solid', borderColor: 'primary.main' }}>
-          <Typography variant="h6" sx={{ color: '#4B1C71', fontWeight: 600, mb: 2 }}>{t('students.grades')}</Typography>
+          <Typography variant="h6" sx={{ color: '#d1b3ff', fontWeight: 600, mb: 2 }}>{t('students.grades')}</Typography>
           <TableContainer>
             <Table size="small">
               <TableHead sx={{ bgcolor: 'rgba(124,58,237,0.12)' }}>
@@ -315,7 +315,7 @@ const StudentRecordPage = () => {
                       <TableCell>{g.subject_name || `Subject #${g.subject_id}`}</TableCell>
                       <TableCell>{g.period_name || `Period #${g.academic_period_id}`}</TableCell>
                       <TableCell sx={{ textAlign: 'center', fontWeight: 'bold' }}>{g.grade_value}</TableCell>
-                      <TableCell sx={{ textAlign: 'center', fontWeight: 'bold', color: '#4B1C71' }}>{g.grade_letter || '-'}</TableCell>
+                      <TableCell sx={{ textAlign: 'center', fontWeight: 'bold', color: '#d1b3ff' }}>{g.grade_letter || '-'}</TableCell>
                       <TableCell><Chip size="small" label={g.status || 'DRAFT'} color={g.status === 'LOCKED' ? 'default' : 'primary'} /></TableCell>
                     </TableRow>
                   ))
@@ -329,7 +329,7 @@ const StudentRecordPage = () => {
       {/* 3. Attendance */}
       {tabIndex === 2 && (
         <Paper sx={{ p: 3, borderTop: '4px solid', borderColor: 'primary.main' }}>
-          <Typography variant="h6" sx={{ color: '#4B1C71', fontWeight: 600, mb: 2 }}>{t('students.attendance')}</Typography>
+          <Typography variant="h6" sx={{ color: '#d1b3ff', fontWeight: 600, mb: 2 }}>{t('students.attendance')}</Typography>
           <Grid container spacing={2} sx={{ mb: 2 }}>
             {['P', 'O', 'E', 'U'].map((key) => (
               <Grid item xs={6} md={3} key={key}>
@@ -377,7 +377,7 @@ const StudentRecordPage = () => {
       {tabIndex === 3 && (
         <Paper sx={{ p: 3, borderTop: '4px solid', borderColor: 'primary.main' }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Typography variant="h6" sx={{ color: '#4B1C71', fontWeight: 600 }}>{t('students.guardians')}</Typography>
+            <Typography variant="h6" sx={{ color: '#d1b3ff', fontWeight: 600 }}>{t('students.guardians')}</Typography>
             <Button size="small" variant="outlined" onClick={() => navigate(`/guardians/new?studentId=${student.id}`)}>+ {t('common.add')}</Button>
           </Box>
           <Grid container spacing={2}>
@@ -412,7 +412,7 @@ const StudentRecordPage = () => {
       {tabIndex === 4 && (
         <Paper sx={{ p: 3, borderTop: '4px solid', borderColor: 'primary.main' }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Typography variant="h6" sx={{ color: '#4B1C71', fontWeight: 600 }}>{t('students.documents')}</Typography>
+            <Typography variant="h6" sx={{ color: '#d1b3ff', fontWeight: 600 }}>{t('students.documents')}</Typography>
             <Button size="small" variant="outlined" onClick={() => navigate(`/documents/new?studentId=${student.id}`)}>+ {t('common.add')}</Button>
           </Box>
           <TableContainer>
@@ -448,7 +448,7 @@ const StudentRecordPage = () => {
       {tabIndex === 5 && (
         <Paper sx={{ p: 3, borderTop: '4px solid', borderColor: 'primary.main' }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Typography variant="h6" sx={{ color: '#4B1C71', fontWeight: 600 }}>{t('students.medical')}</Typography>
+            <Typography variant="h6" sx={{ color: '#d1b3ff', fontWeight: 600 }}>{t('students.medical')}</Typography>
             <Button size="small" variant="outlined" onClick={() => navigate(medical ? `/medical-records/${medical.id}/edit` : `/medical-records/new?studentId=${student.id}`)}>
               {medical ? t('common.edit') : `+ ${t('common.add')}`}
             </Button>
@@ -479,7 +479,7 @@ const StudentRecordPage = () => {
       {/* 7. Scholarships */}
       {tabIndex === 6 && (
         <Paper sx={{ p: 3, borderTop: '4px solid', borderColor: 'primary.main' }}>
-          <Typography variant="h6" sx={{ color: '#4B1C71', fontWeight: 600, mb: 2 }}>{t('students.scholarships')}</Typography>
+          <Typography variant="h6" sx={{ color: '#d1b3ff', fontWeight: 600, mb: 2 }}>{t('students.scholarships')}</Typography>
           <TableContainer>
             <Table size="small">
               <TableHead sx={{ bgcolor: 'rgba(124,58,237,0.12)' }}>
@@ -512,7 +512,7 @@ const StudentRecordPage = () => {
       {/* 8. Academic History */}
       {tabIndex === 7 && (
         <Paper sx={{ p: 3, borderTop: '4px solid', borderColor: 'primary.main' }}>
-          <Typography variant="h6" sx={{ color: '#4B1C71', fontWeight: 600, mb: 2 }}>{t('students.history')}</Typography>
+          <Typography variant="h6" sx={{ color: '#d1b3ff', fontWeight: 600, mb: 2 }}>{t('students.history')}</Typography>
           <TableContainer>
             <Table size="small">
               <TableHead sx={{ bgcolor: 'rgba(124,58,237,0.12)' }}>
@@ -546,7 +546,7 @@ const StudentRecordPage = () => {
       {tabIndex === 8 && (
         <Paper sx={{ p: 3, borderTop: '4px solid', borderColor: 'primary.main' }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Typography variant="h6" sx={{ color: '#4B1C71', fontWeight: 600 }}>{t('students.previousSchools')}</Typography>
+            <Typography variant="h6" sx={{ color: '#d1b3ff', fontWeight: 600 }}>{t('students.previousSchools')}</Typography>
             <Button size="small" variant="outlined" onClick={() => navigate(`/previous-schools/new?studentId=${student.id}`)}>+ {t('common.add')}</Button>
           </Box>
           {previousSchools.length === 0 ? (
@@ -581,7 +581,7 @@ const StudentRecordPage = () => {
       {/* 10. Status History */}
       {tabIndex === 9 && (
         <Paper sx={{ p: 3, borderTop: '4px solid', borderColor: 'primary.main' }}>
-          <Typography variant="h6" sx={{ color: '#4B1C71', fontWeight: 600, mb: 2 }}>{t('students.changeStatus')} — {t('students.history')}</Typography>
+          <Typography variant="h6" sx={{ color: '#d1b3ff', fontWeight: 600, mb: 2 }}>{t('students.changeStatus')} — {t('students.history')}</Typography>
           <TableContainer>
             <Table size="small">
               <TableHead sx={{ bgcolor: 'rgba(124,58,237,0.12)' }}>

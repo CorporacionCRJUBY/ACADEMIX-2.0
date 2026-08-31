@@ -67,4 +67,55 @@ function assertBranchAccess(record, user, notFoundMessage = 'Resource not found'
   return record;
 }
 
-module.exports = { getUserBranchIds, scopeFiltersToUserBranches, assertBranchAccess };
+/**
+ * SEGURIDAD (auditoria 2026-08-31, medio M1): valida el branch_id de un
+ * payload de CREACIÓN contra las sedes del usuario. Antes los POST no
+ * comprobaban nada y un usuario de la sede A podía crear registros en la
+ * sede B. Si el payload no trae branch_id, se rellena con la primera sede
+ * del usuario (nunca queda sin sede un registro creado por un usuario con
+ * sedes asignadas). SUPER_ADMIN puede crear en cualquier sede.
+ */
+function assertBranchForCreate(payload, user) {
+  const userBranchIds = getUserBranchIds(user);
+  if (userBranchIds === null) return payload; // SUPER_ADMIN
+
+  const requested = payload.branch_id !== undefined && payload.branch_id !== null
+    ? Number(payload.branch_id)
+    : null;
+
+  if (userBranchIds.length === 0) {
+    throw new AppError('User has no assigned branches', 403);
+  }
+
+  if (requested === null) {
+    payload.branch_id = userBranchIds[0];
+    return payload;
+  }
+
+  if (!userBranchIds.includes(requested)) {
+    throw new AppError('Cannot create records in a branch you do not belong to', 403);
+  }
+
+  return payload;
+}
+
+/**
+ * SEGURIDAD (auditoria 2026-08-31, medio M1b): valida el branch_id de un
+ * payload de ACTUALIZACIÓN. Solo actúa si el cliente intenta cambiar la sede;
+ * si el branch_id pedido no pertenece a las sedes del usuario, lanza 403.
+ * No rellena nada: en un UPDATE la ausencia del campo significa "no cambiar".
+ */
+function assertBranchChangeAllowed(payload, user) {
+  if (payload.branch_id === undefined || payload.branch_id === null) return payload;
+
+  const userBranchIds = getUserBranchIds(user);
+  if (userBranchIds === null) return payload; // SUPER_ADMIN
+
+  if (!userBranchIds.includes(Number(payload.branch_id))) {
+    throw new AppError('Cannot assign this record to a branch you do not belong to', 403);
+  }
+
+  return payload;
+}
+
+module.exports = { getUserBranchIds, scopeFiltersToUserBranches, assertBranchAccess, assertBranchForCreate, assertBranchChangeAllowed };

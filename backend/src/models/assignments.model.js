@@ -1,5 +1,6 @@
 // FILE: backend/src/models/assignments.model.js
 const db = require('../config/database');
+const { escapeLike } = require('../utils/escapeLike');
 
 const TABLE = 'academic_assignments';
 const FIELDS = [
@@ -14,9 +15,9 @@ function applyAssignmentFilters(query, { search, teacherId, subjectId, grade, se
   if (search) {
     query.where((builder) => {
       builder
-        .where('academic_assignments.code', 'like', `%${search}%`)
-        .orWhere('academic_assignments.section', 'like', `%${search}%`)
-        .orWhere('academic_assignments.schedule', 'like', `%${search}%`);
+        .where('academic_assignments.code', 'like', `%${escapeLike(search)}%`)
+        .orWhere('academic_assignments.section', 'like', `%${escapeLike(search)}%`)
+        .orWhere('academic_assignments.schedule', 'like', `%${escapeLike(search)}%`);
     });
   }
   if (teacherId) query.where('academic_assignments.teacher_id', teacherId);

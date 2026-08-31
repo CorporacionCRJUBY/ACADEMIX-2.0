@@ -6,11 +6,19 @@ const usersRepository = require('../repositories/users.repository');
 const revokedTokensRepository = require('../repositories/revokedTokens.repository');
 const auditService = require('./audit.service');
 const twoFactor = require('../utils/twoFactor');
+const { encrypt: encryptField } = require('../utils/cryptoBox');
 const QRCode = require('qrcode');
 
 // Cuántos códigos de respaldo se emiten en cada setup/regeneración
 // (auditoria hallazgo bajo #2 - 2FA).
 const BACKUP_CODES_COUNT = 10;
+
+// SEGURIDAD (auditoria 2026-08-31, bajo B1): hash bcrypt de relleno para
+// ejecutar una comparación aunque el email no exista. Sin esto, las
+// peticiones con email inexistente respondían mucho más rápido (sin coste
+// de bcrypt) y revelaban por timing qué cuentas existen. El valor es un
+// hash inerte precomputado (rounds 12, como el resto del sistema).
+const DUMMY_HASH = '$2b$12$tr1/GgRIiMiq3UwBRL3VXuSh88FZ8y1CYt9AXcI3FiQVt8YnOLYcG';
 
 // Arma el payload de sesión (roles/permisos) e issuea el par de tokens
 // reales, reutilizado tanto por el login sin 2FA como por el paso final
@@ -48,27 +56,40 @@ async function issueSessionTokens(user) {
 const AuthService = {
   async login(email, password, req) {
     const user = await usersRepository.findByEmail(email);
-    if (!user) {
-      throw new AppError('Invalid credentials', 401);
-    }
-    
-    if (user.status === 'INACTIVE') {
-      throw new AppError('User account is inactive', 403);
-    }
 
     // Bloqueo de cuenta: si ya está bloqueada por intentos fallidos previos,
     // rechazar sin siquiera comparar la contraseña (y sin sumarle otro
     // intento fallido al contador mientras dure el bloqueo).
-    if (usersRepository.isLocked(user)) {
+    if (user && usersRepository.isLocked(user)) {
       throw new AppError('Account locked due to too many failed login attempts. Try again later.', 423);
     }
 
-    const isValid = await bcrypt.compare(password, user.password);
-    if (!isValid) {
-      const lockedUntil = await usersRepository.registerFailedLogin(user.id);
-      if (lockedUntil) {
-        throw new AppError('Account locked due to too many failed login attempts. Try again later.', 423);
+    // SEGURIDAD (bajo B1): siempre se ejecuta una comparación bcrypt, aunque
+    // el email no exista, para que el tiempo de respuesta no revele qué
+    // cuentas están registradas.
+    let passwordOk = false;
+    if (user) {
+      passwordOk = await bcrypt.compare(password, user.password);
+    } else {
+      await bcrypt.compare(password, DUMMY_HASH);
+    }
+
+    if (!user || !passwordOk) {
+      if (user) {
+        const lockedUntil = await usersRepository.registerFailedLogin(user.id);
+        if (lockedUntil) {
+          throw new AppError('Account locked due to too many failed login attempts. Try again later.', 423);
+        }
       }
+      throw new AppError('Invalid credentials', 401);
+    }
+
+    // SEGURIDAD (alto A3): ni INACTIVE ni SUSPENDED pueden iniciar sesión.
+    // Antes el login solo rechazaba INACTIVE y las cuentas suspendidas
+    // entraban normalmente (verifyTwoFactor/refreshToken sí rechazaban
+    // ambas). El mensaje es genérico para no revelar el estado de la
+    // cuenta (enumeración, bajo B1).
+    if (user.status !== 'ACTIVE') {
       throw new AppError('Invalid credentials', 401);
     }
     
@@ -117,9 +138,22 @@ const AuthService = {
     let decoded;
     try {
       decoded = jwt.verifyTwoFactorChallenge(challengeToken);
-    } catch (error) {
+    } catch {
       throw new AppError('Invalid or expired 2FA challenge', 401);
     }
+
+    // SEGURIDAD (bajo B2): el challenge es de UN solo uso. Sin esto, el
+    // token de 5 minutos podía reutilizarse para volver a intentar códigos
+    // (o canjearse de nuevo tras un login exitoso).
+    if (await revokedTokensRepository.isRevoked(decoded.jti)) {
+      throw new AppError('Invalid or expired 2FA challenge', 401);
+    }
+    await revokedTokensRepository.revoke({
+      jti: decoded.jti,
+      userId: decoded.userId,
+      tokenType: '2fa_challenge',
+      expiresAt: new Date(decoded.exp * 1000)
+    });
 
     const user = await usersRepository.findById(decoded.userId);
     if (!user) throw new AppError('User not found', 404);
@@ -164,6 +198,14 @@ const AuthService = {
         throw new AppError('Account locked due to too many failed login attempts. Try again later.', 423);
       }
       throw new AppError('Invalid two-factor authentication code', 401);
+    }
+
+    // SEGURIDAD (hardening 2026-08-31): migración lazy — los secretos
+    // creados antes del cifrado en reposo (AES-256-GCM, utils/cryptoBox.js)
+    // estaban en texto plano en users.twofa_secret; se recifran en el
+    // primer 2FA válido posterior al despliegue.
+    if (!twoFaState.twofa_secret_encrypted) {
+      await usersRepository.upgradeTwoFactorSecret(user.id, encryptField(twoFaState.twofa_secret));
     }
 
     await usersRepository.updateLastLogin(user.id);
@@ -322,7 +364,7 @@ const AuthService = {
           tokenType: 'refresh',
           expiresAt: new Date(decoded.exp * 1000)
         });
-      } catch (error) {
+      } catch {
         // Token de refresh ya inválido/expirado/ajeno: nada que revocar,
         // y no debe impedir que el logout del access token se complete.
       }
@@ -341,7 +383,7 @@ const AuthService = {
     let decoded;
     try {
       decoded = jwt.verifyRefresh(refreshToken);
-    } catch (error) {
+    } catch {
       throw new AppError('Invalid refresh token', 401);
     }
 
@@ -365,6 +407,16 @@ const AuthService = {
     }
     if (usersRepository.isLocked(user)) {
       throw new AppError('Account locked due to too many failed login attempts. Try again later.', 423);
+    }
+
+    // SEGURIDAD (medio M6): un cambio de contraseña invalida todas las
+    // sesiones anteriores — cualquier refresh token emitido ANTES del cambio
+    // (iat anterior a password_changed_at) se rechaza aquí.
+    if (user.password_changed_at && decoded.iat) {
+      const changedAtMs = new Date(user.password_changed_at).getTime();
+      if (decoded.iat * 1000 < changedAtMs) {
+        throw new AppError('Invalid refresh token', 401);
+      }
     }
 
     // Endurecimiento adicional (rotación de refresh token): cada canje

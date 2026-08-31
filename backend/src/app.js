@@ -5,7 +5,6 @@ const cookieParser = require('cookie-parser');
 const helmet = require('helmet');
 const compression = require('compression');
 const morgan = require('morgan');
-const path = require('path');
 
 const config = require('./config/env');
 const routes = require('./routes');
@@ -111,12 +110,12 @@ app.use(express.urlencoded({ extended: true, limit: config.JSON_BODY_LIMIT }));
 //   GET /api/students/:id/photo
 
 // Health check
+// SEGURIDAD (bajo B9): la raíz ya no revela versión ni rutas de docs; para
+// un anónimo basta con saber que el servicio responde.
 app.get('/', (req, res) => {
   res.json({
     success: true,
-    message: 'ACADEMIX API is running',
-    version: '2.0.0',
-    docs: '/api'
+    message: 'ACADEMIX API is running'
   });
 });
 

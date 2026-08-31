@@ -1,10 +1,9 @@
 // FILE: backend/src/services/gpa.service.js
-const AppError = require('../utils/AppError');
 const repository = require('../repositories/gpa.repository');
 const { generateCode } = require('../utils/codeGenerator');
 const auditService = require('./audit.service');
 const settingsRepository = require('../repositories/settings.repository');
-const { calculateGPA, calculateCumulativeGPA, convertToGradePoints } = require('../utils/gpaCalculator');
+const { convertToGradePoints } = require('../utils/gpaCalculator');
 const { pick } = require('../utils/pick');
 // FIX (auditoria hallazgo C1 - aislamiento por sede)
 const { scopeFiltersToUserBranches, assertBranchAccess } = require('../utils/branchScope');

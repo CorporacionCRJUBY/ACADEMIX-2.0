@@ -1,132 +1,133 @@
 // FILE: backend/src/jobs/reportArchiveJob.js
 const db = require('../config/database');
-const auditService = require('../audit/auditService');
+const auditService = require('../services/audit.service');
+
+// FIX (auditoria DB 2026-08-31): la versión anterior consultaba columnas que
+// no existen (student_id, academic_period_id, report_type y code no están en
+// report_versions/transcript_versions, y updated_at tampoco), escribía
+// auditoría con user.id=0 (violaba la FK de audit_logs) y usaba el servicio
+// de auditoría legacy. Ahora agrupa via JOIN con las tablas padre (reports /
+// transcripts), que son las que tienen student, período, tipo y code.
 
 /**
- * Archiva versiones antiguas de reportes/transcripciones cuando existe una versión Official más nueva
+ * Ordena versiones y devuelve las que quedaron superadas por una OFFICIAL
+ * más reciente dentro del mismo grupo.
+ */
+const supersededVersions = (versions) => {
+  const officials = versions.filter((v) => v.status === 'OFFICIAL');
+  if (officials.length === 0) return [];
+
+  const byRecency = (a, b) =>
+    new Date(b.generated_at || b.created_at).getTime() - new Date(a.generated_at || a.created_at).getTime() ||
+    b.version_number - a.version_number;
+
+  officials.sort(byRecency);
+  const latest = officials[0];
+
+  return versions
+    .filter((v) => v.id !== latest.id && v.status !== 'ARCHIVED')
+    .map((v) => ({ ...v, latestVersionNumber: latest.version_number }));
+};
+
+/**
+ * Archiva versiones superadas agrupadas por clave de negocio.
+ * @param {string} tableName - Tabla de versiones a actualizar
+ * @param {Array} rows - Versiones ya con los datos del padre (code, grupo)
+ * @param {Function} groupKeyOf - Calcula la clave de agrupación por fila
+ * @param {string} moduleName - Módulo para la auditoría
+ * @param {string} actionName - Acción para la auditoría
+ * @returns {Promise<number>} Cantidad de versiones archivadas
+ */
+const archiveGroupedVersions = async (tableName, rows, groupKeyOf, moduleName, actionName) => {
+  const groups = new Map();
+  for (const row of rows) {
+    const key = groupKeyOf(row);
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(row);
+  }
+
+  let archived = 0;
+  for (const versions of groups.values()) {
+    const toArchive = supersededVersions(versions);
+    if (toArchive.length === 0) continue;
+
+    const ids = toArchive.map((v) => v.id);
+    await db.transaction(async (trx) => {
+      // report_versions/transcript_versions no tienen updated_at.
+      await trx(tableName).whereIn('id', ids).update({ status: 'ARCHIVED' });
+
+      for (const version of toArchive) {
+        await auditService.log({
+          user: null, // Acción del sistema (sin usuario real)
+          action: actionName,
+          module: moduleName,
+          recordCode: version.code,
+          before: { status: version.status, version_number: version.version_number },
+          after: { status: 'ARCHIVED' },
+          reason: `Automatic archive: newer OFFICIAL version ${version.latestVersionNumber} exists`,
+        });
+      }
+    });
+
+    archived += toArchive.length;
+  }
+  return archived;
+};
+
+/**
+ * Archiva versiones antiguas de reportes/transcripciones cuando existe una
+ * versión OFFICIAL más nueva en el mismo grupo (estudiante + período + tipo).
  * @returns {Promise<{ archivedReports: number, archivedTranscripts: number }>}
  */
 const archiveOldVersions = async () => {
   try {
-    let archivedReports = 0;
-    let archivedTranscripts = 0;
+    // 1. report_versions -> datos de grupo desde `reports`
+    const reportRows = await db('report_versions as rv')
+      .join('reports as r', 'r.id', 'rv.report_id')
+      .whereNull('r.deleted_at')
+      .select(
+        'rv.id',
+        'rv.status',
+        'rv.version_number',
+        'rv.generated_at',
+        'rv.created_at',
+        'r.code',
+        'r.student_id',
+        'r.academic_period_id',
+        'r.category'
+      );
 
-    // 1. Procesar report_versions
-    // Obtener todos los pares (student_id, academic_period_id, report_type) con al menos una versión Official
-    const reportGroups = await db('report_versions')
-      .where('status', 'OFFICIAL')
-      .groupBy('student_id', 'academic_period_id', 'report_type')
-      .select('student_id', 'academic_period_id', 'report_type');
+    const archivedReports = await archiveGroupedVersions(
+      'report_versions',
+      reportRows,
+      (row) => `${row.student_id}|${row.academic_period_id || 0}|${row.category}`,
+      'reports',
+      'REPORT_ARCHIVE'
+    );
 
-    for (const group of reportGroups) {
-      // Obtener la versión Official más reciente para este grupo
-      const latestOfficial = await db('report_versions')
-        .where({
-          student_id: group.student_id,
-          academic_period_id: group.academic_period_id,
-          report_type: group.report_type,
-          status: 'OFFICIAL',
-        })
-        .orderBy('created_at', 'desc')
-        .first();
+    // 2. transcript_versions -> datos de grupo desde `transcripts`
+    const transcriptRows = await db('transcript_versions as tv')
+      .join('transcripts as t', 't.id', 'tv.transcript_id')
+      .whereNull('t.deleted_at')
+      .select(
+        'tv.id',
+        'tv.status',
+        'tv.version_number',
+        'tv.generated_at',
+        'tv.created_at',
+        't.code',
+        't.student_id',
+        't.academic_period_id',
+        't.transcript_type'
+      );
 
-      if (!latestOfficial) continue;
-
-      // Obtener todas las versiones anteriores (no Official, no ARCHIVED) del mismo grupo
-      const olderVersions = await db('report_versions')
-        .where({
-          student_id: group.student_id,
-          academic_period_id: group.academic_period_id,
-          report_type: group.report_type,
-        })
-        .where('id', '!=', latestOfficial.id)
-        .where('status', '!=', 'ARCHIVED')
-        .select('id', 'code', 'status', 'version_number');
-
-      if (olderVersions.length === 0) continue;
-
-      // Archivar versiones anteriores
-      const ids = olderVersions.map(v => v.id);
-      await db.transaction(async (trx) => {
-        await trx('report_versions')
-          .whereIn('id', ids)
-          .update({
-            status: 'ARCHIVED',
-            updated_at: trx.fn.now(),
-          });
-
-        // Registrar auditoría
-        for (const version of olderVersions) {
-          await auditService.log({
-            user: { id: 0 }, // Sistema
-            action: 'REPORT_ARCHIVE',
-            module: 'reports',
-            recordCode: version.code,
-            before: { status: version.status },
-            after: { status: 'ARCHIVED' },
-            reason: `Archivado automático: existe nueva versión Official ${latestOfficial.version_number}`,
-          });
-        }
-      });
-
-      archivedReports += olderVersions.length;
-    }
-
-    // 2. Procesar transcript_versions (similar)
-    const transcriptGroups = await db('transcript_versions')
-      .where('status', 'OFFICIAL')
-      .groupBy('student_id', 'academic_period_id')
-      .select('student_id', 'academic_period_id');
-
-    for (const group of transcriptGroups) {
-      // Obtener la versión Official más reciente
-      const latestOfficial = await db('transcript_versions')
-        .where({
-          student_id: group.student_id,
-          academic_period_id: group.academic_period_id,
-          status: 'OFFICIAL',
-        })
-        .orderBy('created_at', 'desc')
-        .first();
-
-      if (!latestOfficial) continue;
-
-      // Obtener versiones anteriores no archivadas
-      const olderVersions = await db('transcript_versions')
-        .where({
-          student_id: group.student_id,
-          academic_period_id: group.academic_period_id,
-        })
-        .where('id', '!=', latestOfficial.id)
-        .where('status', '!=', 'ARCHIVED')
-        .select('id', 'code', 'status', 'version_number');
-
-      if (olderVersions.length === 0) continue;
-
-      const ids = olderVersions.map(v => v.id);
-      await db.transaction(async (trx) => {
-        await trx('transcript_versions')
-          .whereIn('id', ids)
-          .update({
-            status: 'ARCHIVED',
-            updated_at: trx.fn.now(),
-          });
-
-        for (const version of olderVersions) {
-          await auditService.log({
-            user: { id: 0 },
-            action: 'TRANSCRIPT_ARCHIVE',
-            module: 'transcripts',
-            recordCode: version.code,
-            before: { status: version.status },
-            after: { status: 'ARCHIVED' },
-            reason: `Archivado automático: existe nueva versión Official ${latestOfficial.version_number}`,
-          });
-        }
-      });
-
-      archivedTranscripts += olderVersions.length;
-    }
+    const archivedTranscripts = await archiveGroupedVersions(
+      'transcript_versions',
+      transcriptRows,
+      (row) => `${row.student_id}|${row.academic_period_id || 0}|${row.transcript_type}`,
+      'transcripts',
+      'TRANSCRIPT_ARCHIVE'
+    );
 
     console.log(`[ReportArchiveJob] Archivados: ${archivedReports} reports, ${archivedTranscripts} transcripts`);
     return { archivedReports, archivedTranscripts };

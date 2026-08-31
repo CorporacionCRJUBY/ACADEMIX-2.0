@@ -5,6 +5,14 @@
 // pre-calculado para no depender de esa dependencia externa.
 const hashedPassword = '$2b$10$i9ydPQ85Agt2LpJrWrz69ugmFoD5KT52Cq.nEy1aJzatw0x0HdnoC'; // Admin123!
 exports.seed = function(knex) {
+  // SEGURIDAD (alto A4): estas cuentas son de DEMO con contraseña conocida.
+  // Nunca deben sembrarse en producción salvo opt-in explícito.
+  if (process.env.NODE_ENV === 'production' && process.env.SEED_ALLOW_IN_PRODUCTION !== 'true') {
+    return Promise.reject(new Error(
+      'Seed de usuarios demo bloqueado en producción. ' +
+      'Si realmente lo necesita, defina SEED_ALLOW_IN_PRODUCTION=true.'
+    ));
+  }
   return knex('user_roles').del()
     .then(() => knex('users').del())
     .then(() => {

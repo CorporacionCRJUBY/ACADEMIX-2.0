@@ -4,7 +4,7 @@ const router = express.Router();
 const controller = require('../controllers/auth.controller');
 const { authenticate } = require('../middleware/auth.middleware');
 const { validate } = require('../middleware/validate.middleware');
-const { loginRateLimiter } = require('../middleware/authRateLimit.middleware');
+const { loginRateLimiter, refreshRateLimiter } = require('../middleware/authRateLimit.middleware');
 const { body } = require('express-validator');
 
 // FIX (auditoria hallazgo medio #3 - sin rate-limiting específico en el
@@ -21,7 +21,7 @@ router.post('/login', loginRateLimiter, [
 // FIX (auditoria hallazgo medio #2 - JWT en localStorage): el refresh token
 // ya no se manda en el body (controller.refresh lo lee de la cookie
 // httpOnly), así que no hay nada que validar aquí.
-router.post('/refresh', controller.refresh);
+router.post('/refresh', refreshRateLimiter, controller.refresh);
 
 router.post('/logout', authenticate, controller.logout);
 router.get('/me', authenticate, controller.me);

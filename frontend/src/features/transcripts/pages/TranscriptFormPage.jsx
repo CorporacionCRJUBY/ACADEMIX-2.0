@@ -136,7 +136,7 @@ const TranscriptFormPage = () => {
     );
   }
 
-  const sectionTitleSx = { color: '#4B1C71', fontWeight: 700, mb: 2 };
+  const sectionTitleSx = { color: '#d1b3ff', fontWeight: 700, mb: 2 };
   // Once generated, a transcript's status changes only through the
   // "Generate" / "Reprint" / "Archive" actions on the list — never by
   // editing this field directly — so we never silently overwrite an

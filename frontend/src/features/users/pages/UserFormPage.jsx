@@ -163,7 +163,7 @@ const UserFormPage = () => {
     );
   }
 
-  const sectionTitleSx = { color: '#4B1C71', fontWeight: 700, mb: 2 };
+  const sectionTitleSx = { color: '#d1b3ff', fontWeight: 700, mb: 2 };
 
   return (
     <Box sx={{ p: 3 }}>

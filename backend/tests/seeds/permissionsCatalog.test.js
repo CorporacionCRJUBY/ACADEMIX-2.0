@@ -34,7 +34,7 @@ function getSeededModulesAndSets() {
   // in isolation (it's a plain data literal, no external references).
   const modulesMatch = src.match(/const modules = (\{[\s\S]*?\n {6}\};)/);
   if (!modulesMatch) throw new Error('Could not find `modules` catalog in seed file');
-  // eslint-disable-next-line no-eval
+   
   const modules = eval(`(${modulesMatch[1].replace(/;$/, '')})`);
 
   const seededPermissions = new Set();

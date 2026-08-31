@@ -16,7 +16,8 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: true,
+    // FIX (auditoria hallazgo medio M9): no publicar sourcemaps en producción.
+    sourcemap: false,
     rollupOptions: {
       output: {
         manualChunks(id) {

@@ -1,5 +1,5 @@
 ﻿// FILE: backend/src/services/teachers.service.js
-const { scopeFiltersToUserBranches, assertBranchAccess } = require('../utils/branchScope');
+const { scopeFiltersToUserBranches, assertBranchAccess, assertBranchForCreate, assertBranchChangeAllowed } = require('../utils/branchScope');
 const repository = require('../repositories/teachers.repository');
 const { generateCode } = require('../utils/codeGenerator');
 const auditService = require('./audit.service');
@@ -39,6 +39,9 @@ const TeachersService = {
   },
 
   async create(payload, user) {
+    // FIX (aislamiento por sede): valida que la sede del nuevo registro sea
+    // una de las sedes asignadas al usuario.
+    assertBranchForCreate(payload, user);
     const code = await generateCode('TEA');
     const data = {
       ...pick(payload, ALLOWED_FIELDS),
@@ -66,6 +69,8 @@ const TeachersService = {
   async update(id, payload, user) {
     const existing = await repository.findById(id);
     assertBranchAccess(existing, user, 'Teacher not found');
+    // FIX (aislamiento por sede): impide mover al docente a una sede ajena.
+    assertBranchChangeAllowed(payload, user);
     
     const before = { ...existing };
     await repository.update(id, { ...pick(payload, ALLOWED_FIELDS), updated_by: user.id });

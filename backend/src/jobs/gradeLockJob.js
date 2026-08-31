@@ -30,7 +30,7 @@ const lockExpiredGrades = async () => {
 
       for (const record of expiredRecords) {
         await auditService.log({
-          user: { id: 1 }, // System / Admin
+          user: null, // Acción del sistema (sin usuario real)
           action: 'GRADE_AUTO_LOCK',
           module: 'grades',
           recordCode: record.code,

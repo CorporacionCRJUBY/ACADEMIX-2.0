@@ -4,6 +4,13 @@ const path = require('path');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 const { verifyFileSignature } = require('../utils/fileSignature');
+const config = require('../config/env');
+
+// FIX (bajo B6): el límite estaba hardcodeado (15 MB) aunque la config
+// exponía UPLOAD_MAX_SIZE_MB sin que nadie lo leyera.
+const MAX_FILE_SIZE_MB = Number.isFinite(config.UPLOAD_MAX_SIZE_MB) && config.UPLOAD_MAX_SIZE_MB > 0
+  ? config.UPLOAD_MAX_SIZE_MB
+  : 10;
 
 // Configurar directorio de uploads
 const uploadDir = path.resolve(__dirname, '../../uploads');
@@ -81,7 +88,7 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({
   storage: storage,
   limits: {
-    fileSize: 15 * 1024 * 1024, // 15 MB
+    fileSize: MAX_FILE_SIZE_MB * 1024 * 1024,
   },
   fileFilter: fileFilter,
 });
@@ -93,7 +100,7 @@ const handleUploadError = (err, req, res, next) => {
       return res.status(413).json({
         success: false,
         code: 'FILE_TOO_LARGE',
-        message: 'File exceeds 15MB limit',
+        message: `File exceeds ${MAX_FILE_SIZE_MB}MB limit`,
       });
     }
     if (err.code === 'LIMIT_UNEXPECTED_FILE') {

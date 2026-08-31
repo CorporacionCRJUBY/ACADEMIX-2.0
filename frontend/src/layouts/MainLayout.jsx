@@ -58,6 +58,9 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../hooks/useAuth';
 import { useLanguage } from '../context/LanguageContext';
+// FIX (auditoria hallazgo medio M4): snackbar global que muestra los errores
+// de API que los ListPages solo registraban en console.error.
+import GlobalErrorSnackbar from '../components/GlobalErrorSnackbar';
 
 const drawerWidth = 260;
 
@@ -256,7 +259,7 @@ const MainLayout = () => {
               {t('dashboard.welcome') || 'Bienvenido/a'}
             </Typography>
             <Typography variant="subtitle1" fontWeight={700} sx={{ position: 'relative', lineHeight: 1.2 }} noWrap>
-              {user?.full_name || 'Usuario'}
+              {user?.full_name || t('common.defaultUserName')}
             </Typography>
           </Box>
 
@@ -278,22 +281,22 @@ const MainLayout = () => {
             <Collapse in={openSections.students} timeout="auto" unmountOnExit>
               <List component="div" disablePadding dense>
                 <ListItemButton sx={{ pl: 4 }} selected={isSelected('/students')} onClick={() => handleNavigate('/students')}>
-                  <ListItemText primary="Students List" />
+                  <ListItemText primary={t('admin.menu.studentsList')} />
                 </ListItemButton>
                 <ListItemButton sx={{ pl: 4 }} selected={isSelected('/guardians')} onClick={() => handleNavigate('/guardians')}>
-                  <ListItemText primary="Guardians" />
+                  <ListItemText primary={t('admin.menu.guardians')} />
                 </ListItemButton>
                 <ListItemButton sx={{ pl: 4 }} selected={isSelected('/documents')} onClick={() => handleNavigate('/documents')}>
-                  <ListItemText primary="Documents" />
+                  <ListItemText primary={t('admin.menu.documents')} />
                 </ListItemButton>
                 <ListItemButton sx={{ pl: 4 }} selected={isSelected('/medical-records')} onClick={() => handleNavigate('/medical-records')}>
-                  <ListItemText primary="Medical Records" />
+                  <ListItemText primary={t('admin.menu.medicalRecords')} />
                 </ListItemButton>
                 <ListItemButton sx={{ pl: 4 }} selected={isSelected('/academic-history')} onClick={() => handleNavigate('/academic-history')}>
-                  <ListItemText primary="Academic History" />
+                  <ListItemText primary={t('admin.menu.academicHistory')} />
                 </ListItemButton>
                 <ListItemButton sx={{ pl: 4 }} selected={isSelected('/previous-schools')} onClick={() => handleNavigate('/previous-schools')}>
-                  <ListItemText primary="Previous Schools" />
+                  <ListItemText primary={t('admin.menu.previousSchools')} />
                 </ListItemButton>
               </List>
             </Collapse>
@@ -307,13 +310,13 @@ const MainLayout = () => {
             <Collapse in={openSections.teachers} timeout="auto" unmountOnExit>
               <List component="div" disablePadding dense>
                 <ListItemButton sx={{ pl: 4 }} selected={isSelected('/teachers')} onClick={() => handleNavigate('/teachers')}>
-                  <ListItemText primary="Teachers List" />
+                  <ListItemText primary={t('admin.menu.teachersList')} />
                 </ListItemButton>
                 <ListItemButton sx={{ pl: 4 }} selected={isSelected('/assignments')} onClick={() => handleNavigate('/assignments')}>
-                  <ListItemText primary="My Assignments" />
+                  <ListItemText primary={t('admin.menu.myAssignments')} />
                 </ListItemButton>
                 <ListItemButton sx={{ pl: 4 }} selected={isSelected('/subjects')} onClick={() => handleNavigate('/subjects')}>
-                  <ListItemText primary="Subjects" />
+                  <ListItemText primary={t('admin.menu.subjects')} />
                 </ListItemButton>
               </List>
             </Collapse>
@@ -327,10 +330,13 @@ const MainLayout = () => {
             <Collapse in={openSections.attendance} timeout="auto" unmountOnExit>
               <List component="div" disablePadding dense>
                 <ListItemButton sx={{ pl: 4 }} selected={isSelected('/attendance')} onClick={() => handleNavigate('/attendance')}>
-                  <ListItemText primary="Daily Attendance" />
+                  <ListItemText primary={t('admin.menu.dailyAttendance')} />
                 </ListItemButton>
-                <ListItemButton sx={{ pl: 4 }} selected={location.pathname.startsWith('/attendance/monthly')} onClick={() => handleNavigate('/attendance')}>
-                  <ListItemText primary="Monthly Grid" />
+                {/* FIX (auditoria hallazgo bajo B8): ahora navega a la vista
+                    mensual real (/attendance/monthly, ruta agregada en App.jsx);
+                    antes llevaba a /attendance, la lista diaria. */}
+                <ListItemButton sx={{ pl: 4 }} selected={location.pathname.startsWith('/attendance/monthly')} onClick={() => handleNavigate('/attendance/monthly')}>
+                  <ListItemText primary={t('admin.menu.monthlyGrid')} />
                 </ListItemButton>
               </List>
             </Collapse>
@@ -344,19 +350,19 @@ const MainLayout = () => {
             <Collapse in={openSections.grades} timeout="auto" unmountOnExit>
               <List component="div" disablePadding dense>
                 <ListItemButton sx={{ pl: 4 }} selected={isSelected('/grades')} onClick={() => handleNavigate('/grades')}>
-                  <ListItemText primary="Gradebook" />
+                  <ListItemText primary={t('admin.menu.gradebook')} />
                 </ListItemButton>
                 <ListItemButton sx={{ pl: 4 }} selected={isSelected('/academic-periods')} onClick={() => handleNavigate('/academic-periods')}>
-                  <ListItemText primary="Academic Periods" />
+                  <ListItemText primary={t('admin.menu.academicPeriods')} />
                 </ListItemButton>
                 <ListItemButton sx={{ pl: 4 }} selected={isSelected('/grade-change-requests')} onClick={() => handleNavigate('/grade-change-requests')}>
-                  <ListItemText primary="Grade Change Requests" />
+                  <ListItemText primary={t('admin.menu.gradeChangeRequests')} />
                 </ListItemButton>
                 <ListItemButton sx={{ pl: 4 }} selected={isSelected('/credits')} onClick={() => handleNavigate('/credits')}>
-                  <ListItemText primary="Credits Management" />
+                  <ListItemText primary={t('admin.menu.creditsManagement')} />
                 </ListItemButton>
                 <ListItemButton sx={{ pl: 4 }} selected={isSelected('/gpa')} onClick={() => handleNavigate('/gpa')}>
-                  <ListItemText primary="GPA Calculation" />
+                  <ListItemText primary={t('admin.menu.gpaCalculation')} />
                 </ListItemButton>
               </List>
             </Collapse>
@@ -370,22 +376,22 @@ const MainLayout = () => {
             {/* Reports Center */}
             <ListItemButton onClick={() => toggleSection('reports')}>
               <ListItemIcon><ReportsIcon color="primary" /></ListItemIcon>
-              <ListItemText primary="Report Center" primaryTypographyProps={{ fontWeight: 600 }} />
+              <ListItemText primary={t('admin.menu.reportCenter')} primaryTypographyProps={{ fontWeight: 600 }} />
               {openSections.reports ? <ExpandLess /> : <ExpandMore />}
             </ListItemButton>
             <Collapse in={openSections.reports} timeout="auto" unmountOnExit>
               <List component="div" disablePadding dense>
                 <ListItemButton sx={{ pl: 4 }} selected={isSelected('/reports')} onClick={() => handleNavigate('/reports')}>
-                  <ListItemText primary="All Reports" />
+                  <ListItemText primary={t('admin.menu.allReports')} />
                 </ListItemButton>
                 <ListItemButton sx={{ pl: 4 }} selected={isSelected('/progress-reports')} onClick={() => handleNavigate('/progress-reports')}>
-                  <ListItemText primary="Progress Reports" />
+                  <ListItemText primary={t('admin.menu.progressReports')} />
                 </ListItemButton>
                 <ListItemButton sx={{ pl: 4 }} selected={isSelected('/report-cards')} onClick={() => handleNavigate('/report-cards')}>
-                  <ListItemText primary="Report Cards (RP 26-27)" />
+                  <ListItemText primary={t('admin.menu.reportCards')} />
                 </ListItemButton>
                 <ListItemButton sx={{ pl: 4 }} selected={isSelected('/transcripts')} onClick={() => handleNavigate('/transcripts')}>
-                  <ListItemText primary="Official Transcripts" />
+                  <ListItemText primary={t('admin.menu.officialTranscripts')} />
                 </ListItemButton>
               </List>
             </Collapse>
@@ -399,10 +405,10 @@ const MainLayout = () => {
             <Collapse in={openSections.graduation} timeout="auto" unmountOnExit>
               <List component="div" disablePadding dense>
                 <ListItemButton sx={{ pl: 4 }} selected={isSelected('/graduation')} onClick={() => handleNavigate('/graduation')}>
-                  <ListItemText primary="Graduation Center" />
+                  <ListItemText primary={t('admin.menu.graduationCenter')} />
                 </ListItemButton>
                 <ListItemButton sx={{ pl: 4 }} selected={isSelected('/gransif')} onClick={() => handleNavigate('/gransif')}>
-                  <ListItemText primary="GRANSIF" />
+                  <ListItemText primary={t('admin.menu.gransif')} />
                 </ListItemButton>
               </List>
             </Collapse>
@@ -424,31 +430,31 @@ const MainLayout = () => {
                 <Divider sx={{ my: 1 }} />
                 <ListItemButton onClick={() => toggleSection('admin')}>
                   <ListItemIcon><AdminIcon color="primary" /></ListItemIcon>
-                  <ListItemText primary="Administration" primaryTypographyProps={{ fontWeight: 600 }} />
+                  <ListItemText primary={t('admin.menu.administration')} primaryTypographyProps={{ fontWeight: 600 }} />
                   {openSections.admin ? <ExpandLess /> : <ExpandMore />}
                 </ListItemButton>
                 <Collapse in={openSections.admin} timeout="auto" unmountOnExit>
                   <List component="div" disablePadding dense>
                     <ListItemButton sx={{ pl: 4 }} selected={isSelected('/users')} onClick={() => handleNavigate('/users')}>
-                      <ListItemText primary="Users" />
+                      <ListItemText primary={t('admin.menu.users')} />
                     </ListItemButton>
                     <ListItemButton sx={{ pl: 4 }} selected={isSelected('/roles')} onClick={() => handleNavigate('/roles')}>
-                      <ListItemText primary="Roles" />
+                      <ListItemText primary={t('admin.menu.roles')} />
                     </ListItemButton>
                     <ListItemButton sx={{ pl: 4 }} selected={isSelected('/permissions')} onClick={() => handleNavigate('/permissions')}>
-                      <ListItemText primary="Permissions" />
+                      <ListItemText primary={t('admin.menu.permissions')} />
                     </ListItemButton>
                     <ListItemButton sx={{ pl: 4 }} selected={isSelected('/academic-years')} onClick={() => handleNavigate('/academic-years')}>
-                      <ListItemText primary="Academic Years" />
+                      <ListItemText primary={t('admin.menu.academicYears')} />
                     </ListItemButton>
                     <ListItemButton sx={{ pl: 4 }} selected={isSelected('/audit')} onClick={() => handleNavigate('/audit')}>
-                      <ListItemText primary="Audit Logs" />
+                      <ListItemText primary={t('admin.menu.auditLogs')} />
                     </ListItemButton>
                     <ListItemButton sx={{ pl: 4 }} selected={isSelected('/activity')} onClick={() => handleNavigate('/activity')}>
-                      <ListItemText primary="Activity Feed" />
+                      <ListItemText primary={t('admin.menu.activityFeed')} />
                     </ListItemButton>
                     <ListItemButton sx={{ pl: 4 }} selected={isSelected('/settings')} onClick={() => handleNavigate('/settings')}>
-                      <ListItemText primary="System Settings" />
+                      <ListItemText primary={t('admin.menu.systemSettings')} />
                     </ListItemButton>
                   </List>
                 </Collapse>
@@ -475,6 +481,9 @@ const MainLayout = () => {
       >
         <Outlet />
       </Box>
+
+      {/* FIX (auditoria hallazgo medio M4): una sola instancia por layout */}
+      <GlobalErrorSnackbar />
     </Box>
   );
 };

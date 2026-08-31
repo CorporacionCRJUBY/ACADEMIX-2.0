@@ -1,5 +1,6 @@
 // FILE: backend/src/models/students.model.js
 const db = require('../config/database');
+const { escapeLike } = require('../utils/escapeLike');
 
 const TABLE = 'students';
 
@@ -9,15 +10,15 @@ function applyStudentFilters(query, { search, firstName, lastName, email, grade,
   if (search) {
     query.where((builder) => {
       builder
-        .where('first_name', 'like', `%${search}%`)
-        .orWhere('last_name', 'like', `%${search}%`)
-        .orWhere('email', 'like', `%${search}%`)
-        .orWhere('code', 'like', `%${search}%`);
+        .where('first_name', 'like', `%${escapeLike(search)}%`)
+        .orWhere('last_name', 'like', `%${escapeLike(search)}%`)
+        .orWhere('email', 'like', `%${escapeLike(search)}%`)
+        .orWhere('code', 'like', `%${escapeLike(search)}%`);
     });
   }
-  if (firstName) query.where('first_name', 'like', `%${firstName}%`);
-  if (lastName) query.where('last_name', 'like', `%${lastName}%`);
-  if (email) query.where('email', 'like', `%${email}%`);
+  if (firstName) query.where('first_name', 'like', `%${escapeLike(firstName)}%`);
+  if (lastName) query.where('last_name', 'like', `%${escapeLike(lastName)}%`);
+  if (email) query.where('email', 'like', `%${escapeLike(email)}%`);
   if (grade) query.where('grade', grade);
   if (section) query.where('section', section);
   if (branchId) query.where('branch_id', branchId);

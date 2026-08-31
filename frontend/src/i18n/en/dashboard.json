@@ -2,6 +2,7 @@
   "dashboard": {
     "title": "Dashboard",
     "welcome": "Welcome",
+    "subtitle": "General overview of the academic system",
     "recentActivity": "Recent Activity",
     "todayAttendance": "Today's Attendance"
   }

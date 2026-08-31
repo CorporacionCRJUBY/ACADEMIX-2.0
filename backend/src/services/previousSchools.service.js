@@ -1,5 +1,4 @@
 ﻿// FILE: backend/src/services/previousSchools.service.js
-const AppError = require('../utils/AppError');
 const repository = require('../repositories/previousSchools.repository');
 const { generateCode } = require('../utils/codeGenerator');
 const auditService = require('./audit.service');

@@ -184,7 +184,6 @@ async function consumeBackupCode(inputCode, storedHashes) {
   const normalized = String(inputCode).trim().toUpperCase();
 
   for (let i = 0; i < storedHashes.length; i++) {
-    // eslint-disable-next-line no-await-in-loop
     const matches = await bcrypt.compare(normalized, storedHashes[i]);
     if (matches) {
       return [...storedHashes.slice(0, i), ...storedHashes.slice(i + 1)];

@@ -1,5 +1,6 @@
 // FILE: backend/src/models/credits.model.js
 const db = require('../config/database');
+const { escapeLike } = require('../utils/escapeLike');
 
 const TABLE = 'credits';
 const FIELDS = [
@@ -14,9 +15,9 @@ function applyCreditFilters(query, { search, studentId, academicPeriodId, credit
   if (search) {
     query.where((builder) => {
       builder
-        .where('credits.code', 'like', `%${search}%`)
-        .orWhere('students.first_name', 'like', `%${search}%`)
-        .orWhere('students.last_name', 'like', `%${search}%`);
+        .where('credits.code', 'like', `%${escapeLike(search)}%`)
+        .orWhere('students.first_name', 'like', `%${escapeLike(search)}%`)
+        .orWhere('students.last_name', 'like', `%${escapeLike(search)}%`);
     });
   }
   if (studentId) query.where('credits.student_id', studentId);

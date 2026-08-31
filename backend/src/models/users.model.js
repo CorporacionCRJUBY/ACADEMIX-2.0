@@ -1,5 +1,7 @@
 // FILE: backend/src/models/users.model.js
 const db = require('../config/database');
+const { escapeLike } = require('../utils/escapeLike');
+const { encrypt: encryptField, decrypt: decryptField, isEncrypted } = require('../utils/cryptoBox');
 
 const TABLE = 'users';
 const FIELDS = [
@@ -16,13 +18,13 @@ function applyUsersFilters(query, { search, email, fullName, roleId, branchId, b
   if (search) {
     query.where((builder) => {
       builder
-        .where('users.full_name', 'like', `%${search}%`)
-        .orWhere('users.email', 'like', `%${search}%`)
-        .orWhere('users.code', 'like', `%${search}%`);
+        .where('users.full_name', 'like', `%${escapeLike(search)}%`)
+        .orWhere('users.email', 'like', `%${escapeLike(search)}%`)
+        .orWhere('users.code', 'like', `%${escapeLike(search)}%`);
     });
   }
-  if (email) query.where('users.email', 'like', `%${email}%`);
-  if (fullName) query.where('users.full_name', 'like', `%${fullName}%`);
+  if (email) query.where('users.email', 'like', `%${escapeLike(email)}%`);
+  if (fullName) query.where('users.full_name', 'like', `%${escapeLike(fullName)}%`);
   if (roleId) query.where('users.role_id', roleId);
   if (branchId) query.where('users.branch_id', branchId);
   // FIX (aislamiento por sede): restringe a las sedes del usuario.
@@ -36,7 +38,7 @@ const Users = {
   FIELDS,
 
   findAll(filters = {}) {
-    const { search, email, fullName, roleId, branchId, status, page, pageSize } = filters;
+    const { page, pageSize } = filters;
     let query = db(TABLE)
       .whereNull('users.deleted_at')
       .leftJoin('roles', 'roles.id', 'users.role_id')
@@ -110,6 +112,9 @@ const Users = {
   updatePassword(id, hashedPassword) {
     return db(TABLE).where({ id }).update({
       password: hashedPassword,
+      // SEGURIDAD (medio M6): marca cuándo cambió la contraseña; el refresh
+      // token emitido antes de este instante se rechaza en auth.service.
+      password_changed_at: db.fn.now(),
       updated_at: db.fn.now()
     });
   },
@@ -207,17 +212,26 @@ const Users = {
   // Trae las columnas de 2FA, que se dejaron fuera de FIELDS/findById para
   // no exponer accidentalmente secretos/hashes en cualquier respuesta que
   // reuse esas consultas (perfil, listados de admin, etc). Solo se piden
-  // explícitamente donde el flujo de 2FA las necesita.
-  findTwoFactorState(id) {
-    return db(TABLE)
+  // explícitamente donde el flujo de 2FA las necesita. Los secretos se
+  // descifran aquí (AES-256-GCM, utils/cryptoBox.js) para que el resto del
+  // sistema trabaje siempre con el secreto en claro solo en memoria.
+  async findTwoFactorState(id) {
+    const state = await db(TABLE)
       .where({ id })
       .select('id', 'email', 'twofa_secret', 'twofa_pending_secret', 'twofa_enabled', 'twofa_backup_codes')
       .first();
+    if (!state) return state;
+    return {
+      ...state,
+      twofa_secret_encrypted: isEncrypted(state.twofa_secret),
+      twofa_secret: decryptField(state.twofa_secret),
+      twofa_pending_secret: decryptField(state.twofa_pending_secret),
+    };
   },
 
   setPendingTwoFactorSecret(id, secret) {
     return db(TABLE).where({ id }).update({
-      twofa_pending_secret: secret,
+      twofa_pending_secret: encryptField(secret),
       updated_at: db.fn.now(),
     });
   },
@@ -226,11 +240,20 @@ const Users = {
   // 2FA y guarda los hashes de los códigos de respaldo (nunca en claro).
   enableTwoFactor(id, secret, hashedBackupCodes) {
     return db(TABLE).where({ id }).update({
-      twofa_secret: secret,
+      twofa_secret: encryptField(secret),
       twofa_pending_secret: null,
       twofa_enabled: true,
       twofa_backup_codes: JSON.stringify(hashedBackupCodes),
       twofa_enabled_at: db.fn.now(),
+      updated_at: db.fn.now(),
+    });
+  },
+
+  // Migración lazy: recifra un secreto legacy almacenado en texto plano
+  // sin tocar el resto del estado de 2FA (ver auth.service.js).
+  upgradeTwoFactorSecret(id, encryptedSecret) {
+    return db(TABLE).where({ id }).update({
+      twofa_secret: encryptedSecret,
       updated_at: db.fn.now(),
     });
   },

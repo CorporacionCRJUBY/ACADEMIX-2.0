@@ -37,7 +37,7 @@ import useAuthImage from '../../../hooks/useAuthImage';
 const StudentAvatar = ({ studentId, hasPhoto, initials }) => {
   const { blobUrl } = useAuthImage(hasPhoto ? `/students/${studentId}/photo` : null);
   return (
-    <Avatar src={blobUrl || undefined} sx={{ width: 36, height: 36, bgcolor: '#DCC9F0', color: '#4B1C71', fontSize: '0.9rem', fontWeight: 'bold' }}>
+    <Avatar src={blobUrl || undefined} sx={{ width: 36, height: 36, bgcolor: '#d1b3ff', color: '#241035', fontSize: '0.9rem', fontWeight: 'bold' }}>
       {!blobUrl && initials}
     </Avatar>
   );

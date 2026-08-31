@@ -2,7 +2,10 @@
 import axios from 'axios';
 
 // Configuración base
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+// FIX (auditoria hallazgo B2): el fallback local debe incluir el prefijo
+// `/api`, igual que el VITE_API_URL del .env — antes apuntaba a la raíz del
+// servidor y ninguna ruta de la API habría resuelto sin la variable de entorno.
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 // FIX (auditoria hallazgo medio #2 - JWT en localStorage): el token ya no
 // se lee de localStorage ni se manda a mano como header Authorization —
@@ -20,6 +23,15 @@ const axiosClient = axios.create({
     'Accept': 'application/json',
   },
 });
+
+// FIX (auditoria hallazgo alto A1 - tormenta de refresh): si varios 401
+// concurren, cada uno lanzaba su propio POST /auth/refresh; como el backend
+// rota la cookie de refresh, el segundo refresh llegaba con una cookie ya
+// invalidada, fallaba y el catch ejecutaba el logout, expulsando al usuario
+// injustamente. Con este singleton el primer 401 crea la promesa de refresh
+// y todos los 401 concurrentes la reutilizan; al resolverse (éxito o fallo)
+// se limpia y cada petición reintenta la suya una sola vez.
+let refreshPromise = null;
 
 // Interceptor para manejar respuestas
 axiosClient.interceptors.response.use(
@@ -39,7 +51,14 @@ axiosClient.interceptors.response.use(
         // gracias a `withCredentials`, no hay nada que leer de localStorage
         // ni que mandar en el body. El backend responde con Set-Cookie
         // rotando accessToken/refreshToken (ver auth.service.js).
-        await axios.post(`${API_URL}/auth/refresh`, {}, { withCredentials: true });
+        if (!refreshPromise) {
+          refreshPromise = axios
+            .post(`${API_URL}/auth/refresh`, {}, { withCredentials: true })
+            .finally(() => {
+              refreshPromise = null;
+            });
+        }
+        await refreshPromise;
 
         // Reintentar la petición original; la cookie ya trae el token nuevo.
         return axiosClient(originalRequest);
@@ -72,6 +91,20 @@ axiosClient.interceptors.response.use(
       console.error('[API Error]', errorResponse);
     }
 
+    // FIX (auditoria hallazgo medio M4 - errores silenciados): la mayoría de
+    // los ListPages solo hacen console.error en su catch, así que el usuario
+    // nunca se entera de que algo falló. Despachamos un evento global que
+    // recoge GlobalErrorSnackbar (montado en MainLayout/AuthLayout). Se omite
+    // el 401 (de eso se encarga el flujo de refresh/logout de arriba) y las
+    // peticiones abortadas (ERR_CANCELED), que no son errores reales.
+    if (error.response?.status !== 401 && error.code !== 'ERR_CANCELED') {
+      window.dispatchEvent(
+        new CustomEvent('academix:api-error', {
+          detail: { message: error.response?.data?.message || error.message },
+        })
+      );
+    }
+
     return Promise.reject(errorResponse);
   }
 );
@@ -84,10 +117,10 @@ export const api = {
   patch: (url, data = {}) => axiosClient.patch(url, data),
   delete: (url) => axiosClient.delete(url),
   upload: (url, formData, onProgress) => {
+    // FIX (auditoria hallazgo B5): sin el header Content-Type manual — fijar
+    // 'multipart/form-data' a mano impide que axios/navegador genere el
+    // boundary correcto y rompe la subida. Dejamos que lo establezca solo.
     return axiosClient.post(url, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
       onUploadProgress: (progressEvent) => {
         if (onProgress) {
           const percentCompleted = Math.round(

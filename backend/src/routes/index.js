@@ -2,6 +2,10 @@
 const express = require('express');
 const router = express.Router();
 
+// FIX (M8): tope central de paginación para todos los listados.
+const { clampPagination } = require('../middleware/pagination.middleware');
+router.use(clampPagination);
+
 const authRoutes = require('./auth.routes');
 const usersRoutes = require('./users.routes');
 const studentsRoutes = require('./students.routes');

@@ -53,6 +53,7 @@
     "previousSchools": "Escuelas Anteriores",
     "cumulativeGpa": "GPA Acumulado",
     "creditsEarned": "Créditos Obtenidos",
+    "creditsValue": "{{value}} Créditos",
     "attendanceRate": "Porcentaje de Asistencia",
     "generateReportCard": "Generar Boleta",
     "generateProgressReport": "Generar Informe de Progreso",

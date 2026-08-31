@@ -1,5 +1,4 @@
 ﻿// FILE: backend/src/services/assignments.service.js
-const AppError = require('../utils/AppError');
 const repository = require('../repositories/assignments.repository');
 const { generateCode } = require('../utils/codeGenerator');
 const auditService = require('./audit.service');

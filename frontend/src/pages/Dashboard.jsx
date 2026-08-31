@@ -55,9 +55,13 @@ const DashboardPage = () => {
 
   const loadDashboardData = async () => {
     setLoading(true);
+
+    // FIX (auditoria hallazgo medio M5): con Promise.all, si el usuario no
+    // tiene permiso en UN módulo (403) rechazaban TODAS y el dashboard
+    // quedaba en ceros. Con Promise.allSettled cada módulo se resuelve de
+    // forma independiente y los rechazados toman su valor por defecto.
     try {
-      // Cargar estadísticas
-      const [studentsRes, teachersRes, gradesRes, attendanceRes, assignmentsRes, reportsRes] = await Promise.all([
+      const [studentsRes, teachersRes, gradesRes, attendanceRes, assignmentsRes, reportsRes] = await Promise.allSettled([
         api.get('/students', { params: { pageSize: 1 } }),
         api.get('/teachers', { params: { pageSize: 1 } }),
         api.get('/grades', { params: { pageSize: 1 } }),
@@ -66,32 +70,46 @@ const DashboardPage = () => {
         api.get('/reports', { params: { pageSize: 1 } }),
       ]);
 
-      setStats({
-        students: studentsRes.total || 0,
-        teachers: teachersRes.total || 0,
-        grades: gradesRes.total || 0,
-        attendance: attendanceRes.total || 0,
-        assignments: assignmentsRes.total || 0,
-        reports: reportsRes.total || 0,
-      });
+      const totalOrZero = (result) => (result.status === 'fulfilled' ? result.value?.total || 0 : 0);
 
-      // Cargar actividad reciente
-      // La respuesta tiene forma { success, data: { data: [...], page, pageSize } }
+      setStats({
+        students: totalOrZero(studentsRes),
+        teachers: totalOrZero(teachersRes),
+        grades: totalOrZero(gradesRes),
+        attendance: totalOrZero(attendanceRes),
+        assignments: totalOrZero(assignmentsRes),
+        reports: totalOrZero(reportsRes),
+      });
+    } catch (error) {
+      console.error('Error loading dashboard stats:', error);
+    }
+
+    // FIX (auditoria hallazgo medio M5): las cargas secuenciales van en
+    // try/catch independientes para que el fallo de una no impida la otra.
+
+    // Cargar actividad reciente
+    // La respuesta tiene forma { success, data: { data: [...], page, pageSize } }
+    try {
       const activityRes = await api.get('/activity', { params: { pageSize: 5 } });
       const activityList = activityRes?.data?.data;
       setRecentActivity(Array.isArray(activityList) ? activityList : []);
+    } catch (error) {
+      console.error('Error loading recent activity:', error);
+      setRecentActivity([]);
+    }
 
-      // Cargar asistencia del día
+    // Cargar asistencia del día
+    try {
       const today = new Date().toISOString().split('T')[0];
       const attendanceRes2 = await api.get('/attendance', { params: { date: today, pageSize: 10 } });
       const attendanceList = attendanceRes2?.data?.data;
       setAttendanceToday(Array.isArray(attendanceList) ? attendanceList : []);
-
     } catch (error) {
-      console.error('Error loading dashboard data:', error);
-    } finally {
-      setLoading(false);
+      console.error('Error loading today attendance:', error);
+      setAttendanceToday([]);
     }
+
+    setLoading(false);
   };
 
   const getAttendanceStatusColor = (status) => {
@@ -121,7 +139,7 @@ const DashboardPage = () => {
       title: t('students.title'),
       value: stats.students,
       icon: <StudentsIcon sx={{ fontSize: 40 }} />,
-      color: 'linear-gradient(135deg, #7C3AED 0%, #4B1C71 100%)',
+      color: 'linear-gradient(135deg, #7C3AED 0%, #6423C4 100%)',
       permission: 'students.view',
     },
     {
@@ -175,7 +193,7 @@ const DashboardPage = () => {
           mb: 3,
           p: 3,
           borderRadius: 4,
-          backgroundImage: (t) => t.academix?.gradientPrimary,
+          backgroundImage: (theme) => theme.academix?.gradientPrimary,
           color: '#fff',
           position: 'relative',
           overflow: 'hidden',
@@ -191,10 +209,10 @@ const DashboardPage = () => {
         />
         <Box sx={{ position: 'relative' }}>
           <Typography variant="h4" fontWeight={800}>
-            {t('dashboard.welcome')}, {user?.full_name || 'Usuario'}!
+            {t('dashboard.welcome')}, {user?.full_name || t('common.defaultUserName')}!
           </Typography>
           <Typography variant="body2" sx={{ opacity: 0.85, mt: 0.5 }}>
-            {t('dashboard.subtitle') || 'Este es el resumen de tu institución hoy.'}
+            {t('dashboard.subtitle')}
           </Typography>
         </Box>
         <IconButton onClick={loadDashboardData} disabled={loading} sx={{ color: '#fff', position: 'relative' }}>
@@ -216,7 +234,7 @@ const DashboardPage = () => {
                     position: 'relative',
                     overflow: 'hidden',
                     transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                    '&:hover': { transform: 'translateY(-3px)', boxShadow: (t) => t.academix?.shadowLg },
+                    '&:hover': { transform: 'translateY(-3px)', boxShadow: (theme) => theme.academix?.shadowLg },
                     '&::before': {
                       content: '""',
                       position: 'absolute',
@@ -269,7 +287,7 @@ const DashboardPage = () => {
                 ) : (
                   <List dense>
                     {recentActivity.map((activity, index) => (
-                      <ListItem key={index}>
+                      <ListItem key={activity.id || index}>
                         <ListItemIcon>
                           {getActivityIcon(activity.module)}
                         </ListItemIcon>
@@ -313,7 +331,7 @@ const DashboardPage = () => {
                 ) : (
                   <List dense>
                     {attendanceToday.map((record, index) => (
-                      <ListItem key={index}>
+                      <ListItem key={record.id || `${record.student_id}-${record.date}`}>
                         <ListItemIcon>
                           <Chip
                             label={record.status}

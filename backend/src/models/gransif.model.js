@@ -1,5 +1,6 @@
 // FILE: backend/src/models/gransif.model.js
 const db = require('../config/database');
+const { escapeLike } = require('../utils/escapeLike');
 
 const TABLE = 'gransif_records';
 const FIELDS = [
@@ -12,18 +13,21 @@ const FIELDS = [
 // pagination never drift out of sync with each other. (Same fix pattern as
 // Graduation: the list was previously stuck at "0 results" because count()
 // didn't exist at all.)
-function applyGransifFilters(query, { search, studentId, academicYearId, status }) {
+function applyGransifFilters(query, { search, studentId, academicYearId, status, branchIds }) {
   if (search) {
     query.where((builder) => {
       builder
-        .where('gransif_records.code', 'like', `%${search}%`)
-        .orWhere('students.first_name', 'like', `%${search}%`)
-        .orWhere('students.last_name', 'like', `%${search}%`);
+        .where('gransif_records.code', 'like', `%${escapeLike(search)}%`)
+        .orWhere('students.first_name', 'like', `%${escapeLike(search)}%`)
+        .orWhere('students.last_name', 'like', `%${escapeLike(search)}%`);
     });
   }
   if (studentId) query.where('gransif_records.student_id', studentId);
   if (academicYearId) query.where('gransif_records.academic_year_id', academicYearId);
   if (status) query.where('gransif_records.status', status);
+  // FIX (aislamiento por sede): estos registros no tienen branch_id propio;
+  // la sede se hereda del estudiante asociado.
+  if (branchIds) query.whereIn('students.branch_id', branchIds);
   return query;
 }
 
@@ -32,7 +36,7 @@ const Gransif = {
   FIELDS,
 
   findAll(filters = {}) {
-    const { search, studentId, academicYearId, status, page, pageSize } = filters;
+    const { search, studentId, academicYearId, status, branchIds, page, pageSize } = filters;
     let query = db(TABLE)
       .whereNull('gransif_records.deleted_at')
       .leftJoin('students', 'students.id', 'gransif_records.student_id')
@@ -40,7 +44,7 @@ const Gransif = {
         'gransif_records.*',
         db.raw("CONCAT(students.first_name, ' ', students.last_name) as student_name")
       );
-    applyGransifFilters(query, { search, studentId, academicYearId, status });
+    applyGransifFilters(query, { search, studentId, academicYearId, status, branchIds });
 
     if (page && pageSize) {
       const offset = (page - 1) * pageSize;
@@ -51,11 +55,11 @@ const Gransif = {
   },
 
   async count(filters = {}) {
-    const { search, studentId, academicYearId, status } = filters;
+    const { search, studentId, academicYearId, status, branchIds } = filters;
     let query = db(TABLE)
       .whereNull('gransif_records.deleted_at')
       .leftJoin('students', 'students.id', 'gransif_records.student_id');
-    applyGransifFilters(query, { search, studentId, academicYearId, status });
+    applyGransifFilters(query, { search, studentId, academicYearId, status, branchIds });
     const [{ total }] = await query.count({ total: 'gransif_records.id' });
     return Number(total);
   },

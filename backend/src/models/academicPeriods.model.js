@@ -1,5 +1,6 @@
 // FILE: backend/src/models/academicPeriods.model.js
 const db = require('../config/database');
+const { escapeLike } = require('../utils/escapeLike');
 
 const TABLE = 'academic_periods';
 const FIELDS = [
@@ -24,8 +25,8 @@ const AcademicPeriods = {
     if (search) {
       query = query.where((builder) => {
         builder
-          .where(`${TABLE}.name`, 'like', `%${search}%`)
-          .orWhere(`${TABLE}.code`, 'like', `%${search}%`);
+          .where(`${TABLE}.name`, 'like', `%${escapeLike(search)}%`)
+          .orWhere(`${TABLE}.code`, 'like', `%${escapeLike(search)}%`);
       });
     }
 
@@ -48,8 +49,8 @@ const AcademicPeriods = {
     if (search) {
       query = query.where((builder) => {
         builder
-          .where('name', 'like', `%${search}%`)
-          .orWhere('code', 'like', `%${search}%`);
+          .where('name', 'like', `%${escapeLike(search)}%`)
+          .orWhere('code', 'like', `%${escapeLike(search)}%`);
       });
     }
 

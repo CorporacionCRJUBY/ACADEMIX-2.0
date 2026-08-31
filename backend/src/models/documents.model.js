@@ -1,5 +1,6 @@
 // FILE: backend/src/models/documents.model.js
 const db = require('../config/database');
+const { escapeLike } = require('../utils/escapeLike');
 
 const TABLE = 'documents';
 const FIELDS = [
@@ -14,10 +15,10 @@ function applyDocumentFilters(query, { search, studentId, documentType, status, 
   if (search) {
     query.where((builder) => {
       builder
-        .where('documents.code', 'like', `%${search}%`)
-        .orWhere('documents.title', 'like', `%${search}%`)
-        .orWhere('students.first_name', 'like', `%${search}%`)
-        .orWhere('students.last_name', 'like', `%${search}%`);
+        .where('documents.code', 'like', `%${escapeLike(search)}%`)
+        .orWhere('documents.title', 'like', `%${escapeLike(search)}%`)
+        .orWhere('students.first_name', 'like', `%${escapeLike(search)}%`)
+        .orWhere('students.last_name', 'like', `%${escapeLike(search)}%`);
     });
   }
   if (studentId) query.where('documents.student_id', studentId);

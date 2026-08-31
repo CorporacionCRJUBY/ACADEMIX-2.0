@@ -1,5 +1,6 @@
-﻿// FILE: backend/src/services/calendar.service.js
+// FILE: backend/src/services/calendar.service.js
 const AppError = require('../utils/AppError');
+const { scopeFiltersToUserBranches, assertBranchAccess, assertBranchForCreate, assertBranchChangeAllowed } = require('../utils/branchScope');
 const repository = require('../repositories/calendar.repository');
 const { generateCode } = require('../utils/codeGenerator');
 const auditService = require('./audit.service');
@@ -13,7 +14,11 @@ const ALLOWED_FIELDS = ['branch_id', 'academic_year_id', 'date', 'title', 'descr
 const CalendarService = {
   async findAll(filters, user) {
     const { page = 1, pageSize = 20, search, year, month, branchId, academicYearId, eventType, status } = filters;
-    const queryFilters = { search, year, month, branchId, academicYearId, eventType, status };
+    // FIX (aislamiento por sede): restringe a las sedes del usuario.
+    const queryFilters = scopeFiltersToUserBranches(
+      { search, year, month, branchId, academicYearId, eventType, status },
+      user
+    );
     const [data, total] = await Promise.all([
       repository.findAll({ ...queryFilters, page, pageSize }),
       repository.count(queryFilters),
@@ -23,7 +28,7 @@ const CalendarService = {
 
   async findById(id, user) {
     const record = await repository.findById(id);
-    if (!record) throw new AppError('Calendar event not found', 404);
+    assertBranchAccess(record, user, 'Calendar event not found');
     return record;
   },
 
@@ -33,14 +38,21 @@ const CalendarService = {
     // Bug fix: this previously ignored page/pageSize entirely and never
     // returned a total, so the list's pagination footer always showed
     // "0 results" even though rows for the month were being displayed.
+    // FIX (aislamiento por sede): la vista por mes también se restringe a
+    // las sedes del usuario; un branchId del cliente solo se honra si es
+    // una de sus sedes reales.
+    const scoped = scopeFiltersToUserBranches({ branchId }, user);
     const [data, total] = await Promise.all([
-      repository.findByMonth(year, month, branchId, academicYearId, page, pageSize),
-      repository.countByMonth(year, month, branchId, academicYearId),
+      repository.findByMonth(year, month, scoped.branchId || null, academicYearId, page, pageSize, scoped.branchIds || null),
+      repository.countByMonth(year, month, scoped.branchId || null, academicYearId, scoped.branchIds || null),
     ]);
     return { data, total, page: Number(page), pageSize: Number(pageSize) };
   },
 
   async create(payload, user) {
+    // FIX (aislamiento por sede): valida que la sede del nuevo evento sea
+    // una de las sedes asignadas al usuario.
+    assertBranchForCreate(payload, user);
     const code = await generateCode('CAL');
     const data = {
       ...pick(payload, ALLOWED_FIELDS),
@@ -66,7 +78,9 @@ const CalendarService = {
 
   async update(id, payload, user) {
     const existing = await repository.findById(id);
-    if (!existing) throw new AppError('Calendar event not found', 404);
+    assertBranchAccess(existing, user, 'Calendar event not found');
+    // FIX (aislamiento por sede): impide mover el evento a una sede ajena.
+    assertBranchChangeAllowed(payload, user);
     
     const before = { ...existing };
     await repository.update(id, { ...pick(payload, ALLOWED_FIELDS), updated_by: user.id });
@@ -87,7 +101,7 @@ const CalendarService = {
 
   async softDelete(id, user) {
     const existing = await repository.findById(id);
-    if (!existing) throw new AppError('Calendar event not found', 404);
+    assertBranchAccess(existing, user, 'Calendar event not found');
     
     await repository.softDelete(id, user.id);
     

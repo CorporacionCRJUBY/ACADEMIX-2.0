@@ -1,5 +1,6 @@
 ﻿// FILE: backend/src/models/attendance.model.js
 const db = require('../config/database');
+const { escapeLike } = require('../utils/escapeLike');
 
 const TABLE = 'attendance_records';
 const FIELDS = [
@@ -14,8 +15,8 @@ function applyAttendanceFilters(query, { search, assignmentId, studentId, dateFr
   if (search) {
     query.where((builder) => {
       builder
-        .where('attendance_records.code', 'like', `%${search}%`)
-        .orWhere('attendance_records.notes', 'like', `%${search}%`);
+        .where('attendance_records.code', 'like', `%${escapeLike(search)}%`)
+        .orWhere('attendance_records.notes', 'like', `%${escapeLike(search)}%`);
     });
   }
   if (assignmentId) query.where('attendance_records.assignment_id', assignmentId);

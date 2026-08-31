@@ -37,4 +37,28 @@ const loginRateLimiter = rateLimit({
   },
 });
 
-module.exports = { loginRateLimiter };
+// SEGURIDAD (bajo B8): el refresh tampoco tenía límite propio. Con un
+// refresh token robado no debería poder martillarse el endpoint (rotación
+// masiva, sondeo de jti). Un cliente legítimo refresca como mucho una vez
+// por ciclo de expiración del access token, así que 30/15min por IP es
+// holgado para uso real y estrecho para abuso.
+const refreshRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 30, // peticiones por IP en la ventana
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    code: 'REFRESH_RATE_LIMIT_EXCEEDED',
+    message: 'Too many refresh attempts from this IP. Please try again later.',
+  },
+  handler: (req, res) => {
+    res.status(429).json({
+      success: false,
+      code: 'REFRESH_RATE_LIMIT_EXCEEDED',
+      message: 'Too many refresh attempts from this IP. Please try again later.',
+    });
+  },
+});
+
+module.exports = { loginRateLimiter, refreshRateLimiter };

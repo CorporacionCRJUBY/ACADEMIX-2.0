@@ -1,5 +1,6 @@
 // FILE: backend/src/models/branches.model.js
 const db = require('../config/database');
+const { escapeLike } = require('../utils/escapeLike');
 
 const TABLE = 'branches';
 const FIELDS = [
@@ -19,10 +20,10 @@ const Branches = {
     if (search) {
       query = query.where((builder) => {
         builder
-          .where('name', 'like', `%${search}%`)
-          .orWhere('code', 'like', `%${search}%`)
-          .orWhere('address', 'like', `%${search}%`)
-          .orWhere('email', 'like', `%${search}%`);
+          .where('name', 'like', `%${escapeLike(search)}%`)
+          .orWhere('code', 'like', `%${escapeLike(search)}%`)
+          .orWhere('address', 'like', `%${escapeLike(search)}%`)
+          .orWhere('email', 'like', `%${escapeLike(search)}%`);
       });
     }
 
@@ -44,10 +45,10 @@ const Branches = {
     if (search) {
       query = query.where((builder) => {
         builder
-          .where('name', 'like', `%${search}%`)
-          .orWhere('code', 'like', `%${search}%`)
-          .orWhere('address', 'like', `%${search}%`)
-          .orWhere('email', 'like', `%${search}%`);
+          .where('name', 'like', `%${escapeLike(search)}%`)
+          .orWhere('code', 'like', `%${escapeLike(search)}%`)
+          .orWhere('address', 'like', `%${escapeLike(search)}%`)
+          .orWhere('email', 'like', `%${escapeLike(search)}%`);
       });
     }
 

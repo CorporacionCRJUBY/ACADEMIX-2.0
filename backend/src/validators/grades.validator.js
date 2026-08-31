@@ -22,6 +22,12 @@ const gradesValidators = {
   findById: [
     param('id').isInt().withMessage('ID must be an integer'),
   ],
+  // FIX (bajo B5): este endpoint no tenía ninguna validación de entrada.
+  requestChange: [
+    param('id').isInt().withMessage('ID must be an integer'),
+    body('requested_grade').isFloat({ min: 0, max: 100 }).withMessage('Requested grade must be between 0 and 100'),
+    body('reason').isString().trim().isLength({ min: 1, max: 1000 }).withMessage('Reason is required (max 1000 chars)'),
+  ],
   softDelete: [
     param('id').isInt().withMessage('ID must be an integer'),
   ],

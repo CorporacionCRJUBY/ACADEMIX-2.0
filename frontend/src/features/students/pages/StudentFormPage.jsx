@@ -196,7 +196,7 @@ const StudentFormPage = () => {
 
   const initials = `${formData.first_name?.[0] || ''}${formData.last_name?.[0] || ''}`.toUpperCase();
 
-  const sectionTitleSx = { color: '#4B1C71', fontWeight: 700, mb: 2 };
+  const sectionTitleSx = { color: '#d1b3ff', fontWeight: 700, mb: 2 };
 
   return (
     <Box sx={{ p: 3 }}>
@@ -225,7 +225,7 @@ const StudentFormPage = () => {
               <Box sx={{ position: 'relative' }}>
                 <Avatar
                   src={photoBlobUrl || undefined}
-                  sx={{ width: 88, height: 88, bgcolor: '#DCC9F0', color: '#4B1C71', fontSize: '1.75rem', fontWeight: 'bold' }}
+                  sx={{ width: 88, height: 88, bgcolor: '#d1b3ff', color: '#241035', fontSize: '1.75rem', fontWeight: 'bold' }}
                 >
                   {!photoBlobUrl && (initials || '?')}
                 </Avatar>

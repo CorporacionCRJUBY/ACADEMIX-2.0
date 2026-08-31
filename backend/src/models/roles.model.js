@@ -1,5 +1,6 @@
 // FILE: backend/src/models/roles.model.js
 const db = require('../config/database');
+const { escapeLike } = require('../utils/escapeLike');
 
 const TABLE = 'roles';
 const FIELDS = [
@@ -13,12 +14,12 @@ function applyRolesFilters(query, { search, name, status }) {
   if (search) {
     query.where((builder) => {
       builder
-        .where('code', 'like', `%${search}%`)
-        .orWhere('name', 'like', `%${search}%`)
-        .orWhere('description', 'like', `%${search}%`);
+        .where('code', 'like', `%${escapeLike(search)}%`)
+        .orWhere('name', 'like', `%${escapeLike(search)}%`)
+        .orWhere('description', 'like', `%${escapeLike(search)}%`);
     });
   }
-  if (name) query.where('name', 'like', `%${name}%`);
+  if (name) query.where('name', 'like', `%${escapeLike(name)}%`);
   if (status) query.where('status', status);
   return query;
 }

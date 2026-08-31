@@ -25,6 +25,7 @@ const UsersRepository = {
   findTwoFactorState: (id) => UsersModel.findTwoFactorState(id),
   setPendingTwoFactorSecret: (id, secret) => UsersModel.setPendingTwoFactorSecret(id, secret),
   enableTwoFactor: (id, secret, hashedBackupCodes) => UsersModel.enableTwoFactor(id, secret, hashedBackupCodes),
+  upgradeTwoFactorSecret: (id, encryptedSecret) => UsersModel.upgradeTwoFactorSecret(id, encryptedSecret),
   disableTwoFactor: (id) => UsersModel.disableTwoFactor(id),
   replaceBackupCodes: (id, hashedBackupCodes) => UsersModel.replaceBackupCodes(id, hashedBackupCodes),
 };

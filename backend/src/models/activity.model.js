@@ -1,5 +1,6 @@
 // FILE: backend/src/models/activity.model.js
 const db = require('../config/database');
+const { escapeLike } = require('../utils/escapeLike');
 
 const TABLE = 'activity_logs';
 const FIELDS = [
@@ -13,8 +14,8 @@ function applyActivityFilters(query, { search, userId, module, action }, tableAl
   if (search) {
     query.where((builder) => {
       builder
-        .where(`${tableAlias}.record_code`, 'like', `%${search}%`)
-        .orWhere('users.full_name', 'like', `%${search}%`);
+        .where(`${tableAlias}.record_code`, 'like', `%${escapeLike(search)}%`)
+        .orWhere('users.full_name', 'like', `%${escapeLike(search)}%`);
     });
   }
   if (userId) query.where(`${tableAlias}.user_id`, userId);

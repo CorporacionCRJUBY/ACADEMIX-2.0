@@ -1,5 +1,6 @@
 // FILE: backend/src/models/teachers.model.js
 const db = require('../config/database');
+const { escapeLike } = require('../utils/escapeLike');
 
 const TABLE = 'teachers';
 const FIELDS = [
@@ -17,9 +18,9 @@ const Teachers = {
     const { firstName, lastName, email, branchId, branchIds, status, search, page, pageSize } = filters;
     let query = db(TABLE).whereNull('deleted_at');
 
-    if (firstName) query = query.where('first_name', 'like', `%${firstName}%`);
-    if (lastName) query = query.where('last_name', 'like', `%${lastName}%`);
-    if (email) query = query.where('email', 'like', `%${email}%`);
+    if (firstName) query = query.where('first_name', 'like', `%${escapeLike(firstName)}%`);
+    if (lastName) query = query.where('last_name', 'like', `%${escapeLike(lastName)}%`);
+    if (email) query = query.where('email', 'like', `%${escapeLike(email)}%`);
     if (branchId) query = query.where('branch_id', branchId);
     // FIX (aislamiento por sede): restringe a las sedes del usuario.
     if (branchIds) query = query.whereIn('branch_id', branchIds);
@@ -27,11 +28,11 @@ const Teachers = {
     if (search) {
       query = query.where((builder) => {
         builder
-          .where('first_name', 'like', `%${search}%`)
-          .orWhere('last_name', 'like', `%${search}%`)
-          .orWhere('email', 'like', `%${search}%`)
-          .orWhere('code', 'like', `%${search}%`)
-          .orWhere('specialization', 'like', `%${search}%`);
+          .where('first_name', 'like', `%${escapeLike(search)}%`)
+          .orWhere('last_name', 'like', `%${escapeLike(search)}%`)
+          .orWhere('email', 'like', `%${escapeLike(search)}%`)
+          .orWhere('code', 'like', `%${escapeLike(search)}%`)
+          .orWhere('specialization', 'like', `%${escapeLike(search)}%`);
       });
     }
 
@@ -49,20 +50,20 @@ const Teachers = {
     const { firstName, lastName, email, branchId, branchIds, status, search } = filters;
     let query = db(TABLE).whereNull('deleted_at');
 
-    if (firstName) query = query.where('first_name', 'like', `%${firstName}%`);
-    if (lastName) query = query.where('last_name', 'like', `%${lastName}%`);
-    if (email) query = query.where('email', 'like', `%${email}%`);
+    if (firstName) query = query.where('first_name', 'like', `%${escapeLike(firstName)}%`);
+    if (lastName) query = query.where('last_name', 'like', `%${escapeLike(lastName)}%`);
+    if (email) query = query.where('email', 'like', `%${escapeLike(email)}%`);
     if (branchId) query = query.where('branch_id', branchId);
     if (branchIds) query = query.whereIn('branch_id', branchIds);
     if (status) query = query.where('status', status);
     if (search) {
       query = query.where((builder) => {
         builder
-          .where('first_name', 'like', `%${search}%`)
-          .orWhere('last_name', 'like', `%${search}%`)
-          .orWhere('email', 'like', `%${search}%`)
-          .orWhere('code', 'like', `%${search}%`)
-          .orWhere('specialization', 'like', `%${search}%`);
+          .where('first_name', 'like', `%${escapeLike(search)}%`)
+          .orWhere('last_name', 'like', `%${escapeLike(search)}%`)
+          .orWhere('email', 'like', `%${escapeLike(search)}%`)
+          .orWhere('code', 'like', `%${escapeLike(search)}%`)
+          .orWhere('specialization', 'like', `%${escapeLike(search)}%`);
       });
     }
 

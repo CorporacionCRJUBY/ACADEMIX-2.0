@@ -1,5 +1,6 @@
 // FILE: backend/src/models/medicalRecords.model.js
 const db = require('../config/database');
+const { escapeLike } = require('../utils/escapeLike');
 
 const TABLE = 'medical_records';
 const FIELDS = [
@@ -15,9 +16,9 @@ function applyMedicalRecordFilters(query, { search, studentId, medicalCondition,
   if (search) {
     query.where((builder) => {
       builder
-        .where('medical_records.code', 'like', `%${search}%`)
-        .orWhere('students.first_name', 'like', `%${search}%`)
-        .orWhere('students.last_name', 'like', `%${search}%`);
+        .where('medical_records.code', 'like', `%${escapeLike(search)}%`)
+        .orWhere('students.first_name', 'like', `%${escapeLike(search)}%`)
+        .orWhere('students.last_name', 'like', `%${escapeLike(search)}%`);
     });
   }
   if (studentId) query.where('medical_records.student_id', studentId);
@@ -25,7 +26,7 @@ function applyMedicalRecordFilters(query, { search, studentId, medicalCondition,
   // no tiene branch_id propio, pertenece a la sede de su estudiante. Se
   // restringe vía el join con students que ya existía para el search.
   if (branchIds) query.whereIn('students.branch_id', branchIds);
-  if (medicalCondition) query.where('medical_records.medical_condition', 'like', `%${medicalCondition}%`);
+  if (medicalCondition) query.where('medical_records.medical_condition', 'like', `%${escapeLike(medicalCondition)}%`);
   // hasAllergy arrives as the string 'true'/'false' from the query string, so
   // it must be compared explicitly rather than used as a truthy check (the
   // string 'false' is itself truthy in JS).
