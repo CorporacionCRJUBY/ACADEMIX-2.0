@@ -1,4 +1,4 @@
-﻿# ACADEMIX 2.0 — Installation & Setup Guide
+# ACADEMIX 2.0 — Installation & Setup Guide
 
 ## Requirements
 - Node.js >= 18.0.0
@@ -18,22 +18,42 @@
    ```
 
 2. **Configure Environment:**
-   Configure `backend/.env`:
+   Copia `backend/.env.example` a `backend/.env` y ajusta los valores.
+   Mínimo requerido:
    ```env
+   NODE_ENV=development
    PORT=5000
+
    DB_HOST=localhost
    DB_PORT=3306
    DB_USER=root
    DB_PASSWORD=your_password
    DB_NAME=academix_v2
-   JWT_SECRET=your_secret_key_2026
+
+   # JWT: secreto del access token y secreto aparte para refresh tokens.
+   # En producción (NODE_ENV=production) ambos son obligatorios y el
+   # servidor no arranca si faltan o si se usan valores por defecto.
+   JWT_SECRET=change_me_to_a_long_random_string
+   JWT_EXPIRES_IN=15m
+   JWT_REFRESH_SECRET=change_me_to_a_different_long_random_string
+
+   # Clave maestra para cifrar en reposo los secretos TOTP del 2FA
+   # (AES-256-GCM). Obligatoria en producción. Generar con:
+   #   node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+   ENCRYPTION_KEY=change_me_to_64_hex_chars
+
+   # Retención de activity_logs/audit_logs en días. Opcional; default 730.
+   AUDIT_RETENTION_DAYS=730
+
+   # Límite de tamaño para bodies JSON/urlencoded. Opcional; default 2mb.
+   JSON_BODY_LIMIT=2mb
    ```
 
 3. **Run Database Migrations & Seeds:**
    ```bash
    cd backend
-   npx knex migrate:latest --knexfile src/config/knexfile.js
-   npx knex seed:run --knexfile src/config/knexfile.js
+   npm run migrate
+   npm run seed
    ```
 
 4. **Start Application:**

@@ -1,0 +1,12 @@
+# ACADEMIX frontend — .dockerignore
+node_modules
+npm-debug.log
+
+# Entorno local (VITE_* se inyectan al contenedor en runtime)
+.env
+.env.*
+!.env.example
+
+# Build local y artefactos
+dist
+coverage

@@ -1,0 +1,20 @@
+# ACADEMIX backend — .dockerignore
+# Evita que `COPY . .` meta en la imagen secretos (.env), datos de
+# estudiantes (uploads/), dependencias locales y artefactos de desarrollo.
+
+node_modules
+npm-debug.log
+
+# Secretos de entorno (las variables se inyectan al contenedor en runtime)
+.env
+.env.*
+!.env.example
+
+# Datos sensibles subidos y logs locales
+uploads
+logs
+
+# Desarrollo / pruebas
+tests
+coverage
+.eslintcache

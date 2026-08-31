@@ -1,9 +1,11 @@
 // FILE: database/seeds/03_users.seed.js
 // Nota: este archivo vive fuera de backend/, por lo que no puede resolver
 // paquetes npm como 'bcryptjs' (node_modules solo existe dentro de backend/).
-// Como la contraseña del seed es fija ('Admin123!'), se usa su hash bcrypt
-// pre-calculado para no depender de esa dependencia externa.
-const hashedPassword = '$2b$10$i9ydPQ85Agt2LpJrWrz69ugmFoD5KT52Cq.nEy1aJzatw0x0HdnoC'; // Admin123!
+// Como la contraseña del seed es fija ('Academix2026!'), se usa su hash bcrypt
+// pre-calculado para no depender de esa dependencia externa. La contraseña
+// cumple la política de contraseñas (>=10 caracteres, mayúscula, minúscula,
+// dígito y símbolo).
+const hashedPassword = '$2b$10$Fgk4B9YpgqybWSFx4VNtDeRCJ6C1Ii5OkpjWXSVsMhzo1SSDcwn8.'; // Academix2026!
 exports.seed = function(knex) {
   // SEGURIDAD (alto A4): estas cuentas son de DEMO con contraseña conocida.
   // Nunca deben sembrarse en producción salvo opt-in explícito.
