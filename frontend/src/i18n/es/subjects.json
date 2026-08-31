@@ -1,0 +1,20 @@
+{
+  "subjects": {
+    "title": "Materias",
+    "add": "Agregar Materia",
+    "edit": "Editar Materia",
+    "search": "Buscar materias...",
+    "noData": "No se encontraron materias",
+    "code": "Código",
+    "name": "Nombre",
+    "description": "Descripción",
+    "grade": "Grado",
+    "branch": "Sucursal",
+    "credits": "Créditos",
+    "hours": "Horas Semanales",
+    "status": "Estado",
+    "generalInfo": "Información General",
+    "academicInfo": "Información Académica",
+    "confirmDeleteSubject": "¿Está seguro de que desea eliminar esta materia?"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "gpa": {
+    "title": "Promedio Acumulado",
+    "add": "Agregar Registro de Promedio",
+    "edit": "Editar Registro de Promedio",
+    "search": "Buscar registros de promedio...",
+    "noData": "No se encontraron registros de promedio",
+    "code": "Código",
+    "student": "Estudiante",
+    "period": "Período",
+    "year": "Año Académico",
+    "value": "Promedio",
+    "cumulative": "Promedio Acumulado",
+    "credits": "Créditos",
+    "calculated": "Calculado el",
+    "status": "Estado",
+    "recalculate": "Recalcular",
+    "confirmRecalculate": "¿Está seguro de que desea recalcular este promedio?",
+    "generalInfo": "Información del Promedio",
+    "confirmDeleteGpa": "¿Está seguro de que desea eliminar este registro de promedio?"
+  }
+}

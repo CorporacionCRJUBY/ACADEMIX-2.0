@@ -1,0 +1,8 @@
+{
+  "dashboard": {
+    "title": "Panel Principal",
+    "welcome": "Bienvenido",
+    "recentActivity": "Actividad Reciente",
+    "todayAttendance": "Asistencia de Hoy"
+  }
+}

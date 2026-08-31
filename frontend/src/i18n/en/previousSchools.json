@@ -1,0 +1,21 @@
+{
+  "previousSchools": {
+    "title": "Previous Schools",
+    "add": "Add Previous School",
+    "edit": "Edit Previous School",
+    "search": "Search previous schools...",
+    "noData": "No previous schools found",
+    "code": "Code",
+    "student": "Student",
+    "school": "School Name",
+    "address": "Address",
+    "phone": "Phone",
+    "grade": "Last Grade Completed",
+    "year": "Year",
+    "transcript": "Transcript",
+    "transcriptReceived": "Transcript Received",
+    "notes": "Notes",
+    "generalInfo": "Previous School Information",
+    "confirmDeleteRecord": "Are you sure you want to delete this previous school record?"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "progressReports": {
+    "title": "Reportes de Progreso",
+    "add": "Generar Reporte de Progreso",
+    "edit": "Editar Reporte de Progreso",
+    "search": "Buscar reportes de progreso...",
+    "noData": "No se encontraron reportes de progreso",
+    "code": "Código",
+    "student": "Estudiante",
+    "period": "Período",
+    "year": "Año Académico",
+    "date": "Fecha",
+    "version": "Versión",
+    "preview": "Vista Previa PDF",
+    "generate": "Generar",
+    "notes": "Notas",
+    "status": "Estado",
+    "generalInfo": "Información General",
+    "statusHint": "El estado solo cambia mediante Generar / Archivar desde la lista.",
+    "confirmDeleteReport": "Este reporte de progreso se eliminará permanentemente. ¿Continuar?"
+  }
+}

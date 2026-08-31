@@ -1,0 +1,20 @@
+{
+  "graduation": {
+    "title": "Graduation",
+    "add": "Add Graduation Record",
+    "edit": "Edit Graduation Record",
+    "search": "Search graduation records...",
+    "noData": "No graduation records found",
+    "code": "Code",
+    "student": "Student",
+    "year": "Graduation Year",
+    "date": "Graduation Date",
+    "requirementsMet": "Requirements Met",
+    "certificate": "Certificate",
+    "status": "Status",
+    "validate": "Validate",
+    "validationNotes": "Validation Notes",
+    "confirmValidate": "Are you sure you want to validate this graduation record?",
+    "confirmDeleteRecord": "Are you sure you want to delete this graduation record?"
+  }
+}

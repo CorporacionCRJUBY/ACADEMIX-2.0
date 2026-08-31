@@ -1,0 +1,21 @@
+{
+  "previousSchools": {
+    "title": "Escuelas Anteriores",
+    "add": "Agregar Escuela Anterior",
+    "edit": "Editar Escuela Anterior",
+    "search": "Buscar escuelas anteriores...",
+    "noData": "No se encontraron escuelas anteriores",
+    "code": "Código",
+    "student": "Estudiante",
+    "school": "Nombre de la Escuela",
+    "address": "Dirección",
+    "phone": "Teléfono",
+    "grade": "Último Grado Completado",
+    "year": "Año",
+    "transcript": "Transcripción",
+    "transcriptReceived": "Transcripción Recibida",
+    "notes": "Notas",
+    "generalInfo": "Información de la Escuela Anterior",
+    "confirmDeleteRecord": "¿Está seguro de que desea eliminar este registro de escuela anterior?"
+  }
+}

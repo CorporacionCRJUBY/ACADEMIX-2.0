@@ -1,0 +1,17 @@
+{
+  "academicYears": {
+    "title": "Academic Years",
+    "add": "Add Academic Year",
+    "edit": "Edit Academic Year",
+    "search": "Search academic years...",
+    "noData": "No academic years found",
+    "code": "Code",
+    "name": "Name",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "status": "Status",
+    "active": "Active Year",
+    "activeHelp": "Turning this on will activate this academic year and automatically deactivate any other year currently marked as active.",
+    "confirmDeleteAcademicYear": "Are you sure you want to delete this academic year?"
+  }
+}

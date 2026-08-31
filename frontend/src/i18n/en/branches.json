@@ -1,0 +1,16 @@
+{
+  "branches": {
+    "title": "Branches",
+    "add": "Add Branch",
+    "edit": "Edit Branch",
+    "search": "Search branches...",
+    "noData": "No branches found",
+    "code": "Code",
+    "name": "Name",
+    "address": "Address",
+    "email": "Email",
+    "phone": "Phone",
+    "status": "Status",
+    "confirmDeleteBranch": "Are you sure you want to delete this branch?"
+  }
+}

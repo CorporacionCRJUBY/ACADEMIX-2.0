@@ -1,0 +1,19 @@
+{
+  "gransif": {
+    "title": "GRANSIF",
+    "add": "Agregar Registro GRANSIF",
+    "edit": "Editar Registro GRANSIF",
+    "search": "Buscar registros GRANSIF...",
+    "noData": "No se encontraron registros GRANSIF",
+    "code": "Código",
+    "student": "Estudiante",
+    "year": "Año Académico",
+    "date": "Fecha",
+    "score": "Puntaje",
+    "notes": "Notas",
+    "status": "Estado",
+    "activate": "Activar",
+    "confirmActivate": "¿Está seguro de que desea activar este registro GRANSIF?",
+    "confirmDeleteRecord": "¿Está seguro de que desea eliminar este registro GRANSIF? Esta acción no se puede deshacer."
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "gpa": {
+    "title": "GPA",
+    "add": "Add GPA Record",
+    "edit": "Edit GPA Record",
+    "search": "Search GPA records...",
+    "noData": "No GPA records found",
+    "code": "Code",
+    "student": "Student",
+    "period": "Period",
+    "year": "Academic Year",
+    "value": "GPA",
+    "cumulative": "Cumulative GPA",
+    "credits": "Credits",
+    "calculated": "Calculated At",
+    "status": "Status",
+    "recalculate": "Recalculate",
+    "confirmRecalculate": "Are you sure you want to recalculate this GPA?",
+    "generalInfo": "GPA Information",
+    "confirmDeleteGpa": "Are you sure you want to delete this GPA record?"
+  }
+}

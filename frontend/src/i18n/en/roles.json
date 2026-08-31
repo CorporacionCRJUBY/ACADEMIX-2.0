@@ -1,0 +1,16 @@
+{
+  "roles": {
+    "title": "Roles",
+    "add": "Add Role",
+    "edit": "Edit Role",
+    "search": "Search roles...",
+    "noData": "No roles found",
+    "code": "Code",
+    "name": "Name",
+    "description": "Description",
+    "permissions": "Permissions",
+    "assignPermissionsTitle": "Assign Permissions — {{role}}",
+    "superAdminHasAllPermissions": "SUPER_ADMIN automatically has every permission and cannot be modified.",
+    "status": "Status"
+  }
+}

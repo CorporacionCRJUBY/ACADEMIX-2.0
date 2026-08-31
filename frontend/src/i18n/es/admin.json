@@ -1,0 +1,29 @@
+{
+  "admin": {
+    "console": "Consola de Súper Administrador",
+    "welcome": "Bienvenido",
+    "branches": "Sucursales",
+    "branchesDesc": "Administrar sucursales y sedes escolares",
+    "users": "Usuarios",
+    "usersDesc": "Administrar usuarios y cuentas del sistema",
+    "roles": "Roles",
+    "rolesDesc": "Administrar roles y niveles de acceso",
+    "permissions": "Permisos",
+    "permissionsDesc": "Administrar permisos del sistema",
+    "settings": "Configuración",
+    "settingsDesc": "Configurar los ajustes generales del sistema",
+    "audit": "Registro de Auditoría",
+    "auditDesc": "Revisar el historial completo de cambios",
+    "activity": "Registro de Actividad",
+    "activityDesc": "Revisar la actividad reciente de los usuarios",
+    "translations": "Traducciones",
+    "translationsDesc": "Editar los textos del sistema en inglés y español",
+    "backup": "Respaldo",
+    "backupDesc": "Administrar respaldos de la base de datos",
+    "systemInfo": "Información del Sistema",
+    "version": "Versión",
+    "environment": "Entorno",
+    "totalUsers": "Usuarios Totales",
+    "lastBackup": "Último Respaldo"
+  }
+}

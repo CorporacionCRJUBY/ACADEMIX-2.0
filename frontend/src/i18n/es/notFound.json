@@ -1,0 +1,7 @@
+{
+  "notFound": {
+    "title": "Página No Encontrada",
+    "message": "La página que busca no existe o ha sido movida.",
+    "goHome": "Ir al Panel Principal"
+  }
+}

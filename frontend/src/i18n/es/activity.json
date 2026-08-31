@@ -1,0 +1,15 @@
+{
+  "activity": {
+    "title": "Registro de Actividad",
+    "search": "Buscar actividad...",
+    "noData": "No se encontró actividad",
+    "notFound": "Registro de actividad no encontrado",
+    "user": "Usuario",
+    "module": "Módulo",
+    "action": "Acción",
+    "record": "Registro",
+    "date": "Fecha",
+    "ip": "Dirección IP",
+    "details": "Detalles"
+  }
+}

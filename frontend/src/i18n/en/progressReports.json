@@ -1,0 +1,22 @@
+{
+  "progressReports": {
+    "title": "Progress Reports",
+    "add": "Generate Progress Report",
+    "edit": "Edit Progress Report",
+    "search": "Search progress reports...",
+    "noData": "No progress reports found",
+    "code": "Code",
+    "student": "Student",
+    "period": "Period",
+    "year": "Academic Year",
+    "date": "Date",
+    "version": "Version",
+    "preview": "Preview PDF",
+    "generate": "Generate",
+    "notes": "Notes",
+    "status": "Status",
+    "generalInfo": "General Information",
+    "statusHint": "Status changes only through Generate / Archive on the list.",
+    "confirmDeleteReport": "This progress report will be permanently deleted. Continue?"
+  }
+}

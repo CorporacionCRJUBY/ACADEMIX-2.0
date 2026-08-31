@@ -1,0 +1,24 @@
+{
+  "status": {
+    "active": "Active",
+    "inactive": "Inactive",
+    "pending": "Pending",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "locked": "Locked",
+    "open": "Open",
+    "closed": "Closed",
+    "draft": "Draft",
+    "official": "Official",
+    "archived": "Archived",
+    "reprinted": "Reprinted",
+    "published": "Published",
+    "unlocked": "Unlocked",
+    "suspended": "Suspended",
+    "graduated": "Graduated",
+    "withdrawn": "Withdrawn",
+    "transferred": "Transferred",
+    "completed": "Completed",
+    "validated": "Validated"
+  }
+}

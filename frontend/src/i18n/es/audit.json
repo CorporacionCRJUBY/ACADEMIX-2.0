@@ -1,0 +1,18 @@
+{
+  "audit": {
+    "title": "Registro de Auditoría",
+    "search": "Buscar en el registro de auditoría...",
+    "noData": "No se encontraron registros de auditoría",
+    "notFound": "Registro de auditoría no encontrado",
+    "user": "Usuario",
+    "module": "Módulo",
+    "action": "Acción",
+    "record": "Registro",
+    "date": "Fecha",
+    "ip": "Dirección IP",
+    "before": "Antes",
+    "after": "Después",
+    "reason": "Motivo",
+    "details": "Detalles"
+  }
+}

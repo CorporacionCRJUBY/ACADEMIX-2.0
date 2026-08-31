@@ -1,0 +1,27 @@
+{
+  "transcripts": {
+    "title": "Transcripciones",
+    "add": "Generar Transcripción",
+    "edit": "Editar Transcripción",
+    "search": "Buscar transcripciones...",
+    "noData": "No se encontraron transcripciones",
+    "code": "Código",
+    "student": "Estudiante",
+    "period": "Período",
+    "year": "Año Académico",
+    "type": "Tipo",
+    "official": "Oficial",
+    "unofficial": "No Oficial",
+    "version": "Versión",
+    "created": "Creado el",
+    "preview": "Vista Previa PDF",
+    "generate": "Generar",
+    "reprint": "Reimprimir",
+    "confirmReprint": "¿Está seguro de que desea reimprimir esta transcripción?",
+    "notes": "Notas",
+    "status": "Estado",
+    "generalInfo": "Información General",
+    "statusHint": "El estado solo cambia mediante Generar / Reimprimir / Archivar desde la lista.",
+    "confirmDeleteReport": "Este transcript se eliminará permanentemente. ¿Continuar?"
+  }
+}

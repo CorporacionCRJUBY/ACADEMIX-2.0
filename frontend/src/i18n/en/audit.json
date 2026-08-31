@@ -1,0 +1,18 @@
+{
+  "audit": {
+    "title": "Audit Log",
+    "search": "Search audit log...",
+    "noData": "No audit records found",
+    "notFound": "Audit record not found",
+    "user": "User",
+    "module": "Module",
+    "action": "Action",
+    "record": "Record",
+    "date": "Date",
+    "ip": "IP Address",
+    "before": "Before",
+    "after": "After",
+    "reason": "Reason",
+    "details": "Details"
+  }
+}

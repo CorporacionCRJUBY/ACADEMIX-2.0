@@ -1,0 +1,21 @@
+{
+  "academicPeriods": {
+    "title": "Períodos Académicos",
+    "add": "Agregar Período",
+    "edit": "Editar Período",
+    "search": "Buscar períodos...",
+    "noData": "No se encontraron períodos académicos",
+    "code": "Código",
+    "name": "Nombre",
+    "year": "Año Académico",
+    "startDate": "Fecha de Inicio",
+    "endDate": "Fecha de Fin",
+    "status": "Estado",
+    "lock": "Bloquear",
+    "close": "Cerrar",
+    "confirmLock": "¿Está seguro de que desea bloquear este período? Las calificaciones ya no se podrán editar.",
+    "confirmClose": "¿Está seguro de que desea cerrar este período?",
+    "lockedNotice": "Este período está bloqueado y no se puede modificar. Use las acciones de la lista si necesita revertir su estado.",
+    "confirmDeletePeriod": "¿Está seguro de que desea eliminar este período académico?"
+  }
+}

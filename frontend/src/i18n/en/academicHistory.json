@@ -1,0 +1,21 @@
+{
+  "academicHistory": {
+    "title": "Academic History",
+    "add": "Add Record",
+    "edit": "Edit Record",
+    "search": "Search academic history...",
+    "noData": "No academic history found",
+    "code": "Code",
+    "student": "Student",
+    "subject": "Subject",
+    "period": "Period",
+    "year": "Academic Year",
+    "grade": "Grade",
+    "letter": "Letter",
+    "date": "Date",
+    "status": "Status",
+    "notes": "Notes",
+    "confirmDeleteRecord": "Are you sure you want to delete this academic history record? This action cannot be undone.",
+    "lockedHint": "This record is locked and can no longer be edited or deleted."
+  }
+}

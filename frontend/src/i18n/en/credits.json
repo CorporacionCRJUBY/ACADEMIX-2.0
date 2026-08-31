@@ -1,0 +1,25 @@
+{
+  "credits": {
+    "title": "Credits",
+    "add": "Add Credit Record",
+    "edit": "Edit Credit Record",
+    "search": "Search credit records...",
+    "noData": "No credit records found",
+    "code": "Code",
+    "student": "Student",
+    "period": "Period",
+    "type": "Type",
+    "academic": "Academic",
+    "elective": "Elective",
+    "community": "Community Service",
+    "social": "Social",
+    "earned": "Credits Earned",
+    "required": "Credits Required",
+    "notes": "Notes",
+    "status": "Status",
+    "recalculate": "Recalculate",
+    "confirmRecalculate": "Are you sure you want to recalculate credits for this student?",
+    "generalInfo": "Credit Information",
+    "confirmDeleteCredit": "Are you sure you want to delete this credit record?"
+  }
+}

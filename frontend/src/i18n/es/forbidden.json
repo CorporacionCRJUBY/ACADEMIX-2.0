@@ -1,0 +1,7 @@
+{
+  "forbidden": {
+    "title": "Acceso Denegado",
+    "message": "No tiene permiso para acceder a esta página.",
+    "goHome": "Ir al Panel Principal"
+  }
+}

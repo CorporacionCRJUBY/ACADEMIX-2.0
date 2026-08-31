@@ -1,0 +1,22 @@
+{
+  "gradeChangeRequests": {
+    "title": "Solicitudes de Cambio de Calificación",
+    "add": "Nueva Solicitud",
+    "edit": "Editar Solicitud",
+    "search": "Buscar solicitudes...",
+    "noData": "No se encontraron solicitudes de cambio de calificación",
+    "code": "Código",
+    "student": "Estudiante",
+    "gradeRecord": "Registro de Calificación",
+    "current": "Calificación Actual",
+    "requested": "Calificación Solicitada",
+    "requestedAt": "Solicitado el",
+    "reason": "Motivo",
+    "status": "Estado",
+    "approve": "Aprobar",
+    "reject": "Rechazar",
+    "approveTitle": "Aprobar Solicitud",
+    "rejectTitle": "Rechazar Solicitud",
+    "reviewNotes": "Notas de Revisión"
+  }
+}

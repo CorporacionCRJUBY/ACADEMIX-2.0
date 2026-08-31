@@ -1,0 +1,261 @@
+/* FILE: frontend/src/index.css */
+/* Paleta "Aurora Violeta Nocturna" — tokens flexibles.
+   Cambiar cualquier variable aquí reestiliza toda la app (junto al tema de MUI en App.jsx). */
+
+:root {
+  /* Escala de violeta, de más clara (50) a más oscura (900) — ajustada para modo oscuro */
+  --purple-50:  #2a1a40;
+  --purple-100: #331f4d;
+  --purple-200: #4b1c71;
+  --purple-300: #a78bfa;
+  --purple-400: #a78bfa;
+  --purple-500: #7c3aed;
+  --purple-600: #6423c4;
+  --purple-700: #4b1c71;
+  --purple-800: #241035;
+  --purple-900: #150a24;
+
+  /* Color de acento (magenta/fucsia) para resaltar CTAs y datos clave */
+  --color-accent: #c026d3;
+  --color-accent-light: #e879f9;
+
+  /* Alias semánticos usados en el resto del CSS */
+  --color-primary: var(--purple-500);
+  --color-primary-light: var(--purple-400);
+  --color-primary-dark: var(--purple-700);
+  --color-secondary: var(--purple-300);
+  --color-secondary-light: var(--purple-200);
+  --color-secondary-dark: var(--purple-600);
+  --color-background: #0e0618;
+  --color-background-paper: #150a24;
+  --color-sidebar: #110820;
+  --color-text-primary: #f1eeff;
+  --color-text-secondary: rgba(241, 238, 255, 0.65);
+  --color-text-faint: rgba(241, 238, 255, 0.4);
+  --color-divider: rgba(167, 139, 250, 0.14);
+  --color-divider-hover: rgba(167, 139, 250, 0.32);
+  --color-surface: rgba(255, 255, 255, 0.04);
+  --color-surface-hover: rgba(255, 255, 255, 0.07);
+
+  /* Gradientes de marca */
+  --gradient-primary: linear-gradient(135deg, var(--purple-500) 0%, var(--purple-700) 55%, var(--purple-900) 100%);
+  --gradient-accent: linear-gradient(135deg, var(--color-accent) 0%, var(--purple-500) 100%);
+
+  /* Sombras tintadas de violeta, consistentes con el tema de MUI (más profundas para fondo oscuro) */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.45), 0 1px 2px rgba(124, 58, 237, 0.08);
+  --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.5), 0 2px 10px rgba(124, 58, 237, 0.16);
+  --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.6), 0 4px 16px rgba(124, 58, 237, 0.22);
+
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+}
+
+/* Reset y estilos base */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', 'Plus Jakarta Sans', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+  background-color: var(--color-background);
+  background-image:
+    radial-gradient(circle at 0% 0%, rgba(124, 58, 237, 0.10) 0%, transparent 45%),
+    radial-gradient(circle at 100% 0%, rgba(192, 38, 211, 0.08) 0%, transparent 45%),
+    radial-gradient(circle at 50% 100%, rgba(124, 58, 237, 0.06) 0%, transparent 55%);
+  background-attachment: fixed;
+  color: var(--color-text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(167, 139, 250, 0.3);
+  border-radius: 4px;
+  transition: background 0.3s ease;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(167, 139, 250, 0.5); }
+
+.gradient-text {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gradient-surface {
+  background: var(--gradient-primary);
+  color: #FFFFFF;
+}
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--color-divider);
+}
+
+/* Estilos para enlaces */
+a {
+  color: var(--color-primary-light);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+a:hover {
+  color: var(--color-accent-light);
+}
+
+/* Utilidades de texto */
+.text-primary {
+  color: var(--color-primary-light);
+}
+
+.text-secondary {
+  color: var(--color-text-secondary);
+}
+
+.text-light {
+  color: var(--color-secondary);
+}
+
+.bg-primary {
+  background-color: var(--color-primary);
+}
+
+.bg-secondary {
+  background-color: var(--color-secondary);
+}
+
+.bg-light {
+  background-color: var(--color-background);
+}
+
+.bg-white {
+  background-color: var(--color-background-paper);
+}
+
+/* Bordes */
+.border-primary {
+  border-color: var(--color-primary);
+}
+
+.border-secondary {
+  border-color: var(--color-secondary);
+}
+
+.border-light {
+  border-color: var(--color-divider);
+}
+
+/* Sombras */
+.shadow-primary {
+  box-shadow: 0 2px 12px rgba(124, 58, 237, 0.25);
+}
+
+.shadow-secondary {
+  box-shadow: 0 2px 12px rgba(192, 38, 211, 0.2);
+}
+
+/* Transiciones */
+.transition {
+  transition: all 0.3s ease;
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.4s ease forwards;
+}
+
+.animate-slideIn {
+  animation: slideIn 0.4s ease forwards;
+}
+
+/* Utilidades de espaciado */
+.gap-1 { gap: 0.25rem; }
+.gap-2 { gap: 0.5rem; }
+.gap-3 { gap: 0.75rem; }
+.gap-4 { gap: 1rem; }
+.gap-5 { gap: 1.25rem; }
+.gap-6 { gap: 1.5rem; }
+
+/* Utilidades de flex */
+.flex { display: flex; }
+.flex-center { display: flex; align-items: center; justify-content: center; }
+.flex-between { display: flex; align-items: center; justify-content: space-between; }
+.flex-col { display: flex; flex-direction: column; }
+.flex-wrap { flex-wrap: wrap; }
+
+/* Utilidades de grid */
+.grid { display: grid; }
+.grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+.grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+.grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+/* Estilos para impresión: siempre claro y legible en papel, sin importar el tema en pantalla */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  /* El contenido principal (Box component="main" en MainLayout) queda
+     desplazado por el AppBar/Drawer fijos; al imprimir ambos se ocultan
+     via .no-print, así que también hay que resetear su offset para que
+     el expediente no aparezca cortado o con un margen vacío a la izquierda. */
+  main {
+    margin: 0 !important;
+    padding: 0 !important;
+    min-height: 0 !important;
+  }
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .grid-cols-2,
+  .grid-cols-3,
+  .grid-cols-4 {
+    grid-template-columns: 1fr;
+  }
+
+  .flex-wrap-sm {
+    flex-wrap: wrap;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .grid-cols-3,
+  .grid-cols-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

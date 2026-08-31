@@ -1,0 +1,27 @@
+{
+  "transcripts": {
+    "title": "Transcripts",
+    "add": "Generate Transcript",
+    "edit": "Edit Transcript",
+    "search": "Search transcripts...",
+    "noData": "No transcripts found",
+    "code": "Code",
+    "student": "Student",
+    "period": "Period",
+    "year": "Academic Year",
+    "type": "Type",
+    "official": "Official",
+    "unofficial": "Unofficial",
+    "version": "Version",
+    "created": "Created At",
+    "preview": "Preview PDF",
+    "generate": "Generate",
+    "reprint": "Reprint",
+    "confirmReprint": "Are you sure you want to reprint this transcript?",
+    "notes": "Notes",
+    "status": "Status",
+    "generalInfo": "General Information",
+    "statusHint": "Status changes only through Generate / Reprint / Archive on the list.",
+    "confirmDeleteReport": "This transcript will be permanently deleted. Continue?"
+  }
+}

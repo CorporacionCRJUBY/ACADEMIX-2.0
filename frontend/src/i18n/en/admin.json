@@ -1,0 +1,29 @@
+{
+  "admin": {
+    "console": "Super Admin Console",
+    "welcome": "Welcome",
+    "branches": "Branches",
+    "branchesDesc": "Manage school branches and locations",
+    "users": "Users",
+    "usersDesc": "Manage system users and accounts",
+    "roles": "Roles",
+    "rolesDesc": "Manage roles and access levels",
+    "permissions": "Permissions",
+    "permissionsDesc": "Manage system permissions",
+    "settings": "Settings",
+    "settingsDesc": "Configure general system settings",
+    "audit": "Audit Log",
+    "auditDesc": "Review a full history of changes",
+    "activity": "Activity Log",
+    "activityDesc": "Review recent user activity",
+    "translations": "Translations",
+    "translationsDesc": "Edit system text in English and Spanish",
+    "backup": "Backup",
+    "backupDesc": "Manage database backups",
+    "systemInfo": "System Information",
+    "version": "Version",
+    "environment": "Environment",
+    "totalUsers": "Total Users",
+    "lastBackup": "Last Backup"
+  }
+}

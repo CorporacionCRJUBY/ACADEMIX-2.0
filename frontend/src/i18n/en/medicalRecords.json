@@ -1,0 +1,26 @@
+{
+  "medicalRecords": {
+    "title": "Medical Records",
+    "add": "Add Medical Record",
+    "edit": "Edit Medical Record",
+    "search": "Search medical records...",
+    "noData": "No medical records found",
+    "code": "Code",
+    "student": "Student",
+    "hasAllergy": "Has Allergies",
+    "allergies": "Allergies",
+    "allergiesPlaceholder": "List any known allergies...",
+    "condition": "Medical Condition",
+    "conditionPlaceholder": "Describe any relevant medical condition...",
+    "medications": "Medications",
+    "medicationsPlaceholder": "List current medications...",
+    "healthInsurance": "Health Insurance",
+    "insuranceNumber": "Insurance Number",
+    "emergencyContact": "Emergency Contact",
+    "emergencyPhone": "Emergency Phone",
+    "lastCheckup": "Last Checkup",
+    "notes": "Notes",
+    "generalInfo": "Medical Record Information",
+    "confirmDeleteRecord": "Are you sure you want to delete this medical record?"
+  }
+}

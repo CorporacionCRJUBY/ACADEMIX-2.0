@@ -1,0 +1,29 @@
+{
+  "users": {
+    "title": "Usuarios",
+    "add": "Agregar Usuario",
+    "edit": "Editar Usuario",
+    "search": "Buscar usuarios...",
+    "noData": "No se encontraron usuarios",
+    "generalInfo": "Información General",
+    "code": "Código",
+    "fullName": "Nombre Completo",
+    "email": "Correo",
+    "phone": "Teléfono",
+    "branch": "Sucursal",
+    "role": "Rol",
+    "assignRoles": "Asignar Roles",
+    "assignRolesTitle": "Asignar Roles — {{user}}",
+    "assignRolesHint": "Estos son roles adicionales, además del campo Rol principal del usuario. Los permisos de un usuario surgen de la unión de todos los roles asignados.",
+    "password": "Contraseña",
+    "newPassword": "Nueva Contraseña",
+    "confirmPassword": "Confirmar Contraseña",
+    "changePassword": "Cambiar Contraseña",
+    "passwordSection": "Contraseña",
+    "passwordMismatch": "Las contraseñas no coinciden",
+    "leaveBlankToKeep": "Dejar en blanco para mantener la contraseña actual",
+    "confirmDeleteUser": "¿Está seguro de que desea eliminar este usuario? Esta acción no se puede deshacer.",
+    "lastLogin": "Último Acceso",
+    "status": "Estado"
+  }
+}

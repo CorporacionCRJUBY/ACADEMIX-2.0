@@ -1,0 +1,17 @@
+{
+  "name": "academix-2.0",
+  "version": "1.0.0",
+  "description": "Integral academic-administrative platform for New Direction Academy.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "type": "commonjs",
+  "dependencies": {
+    "bcryptjs": "^3.0.3"
+  }
+}

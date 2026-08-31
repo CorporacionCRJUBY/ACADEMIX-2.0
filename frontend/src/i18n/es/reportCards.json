@@ -1,0 +1,22 @@
+{
+  "reportCards": {
+    "title": "Boletas de Calificaciones",
+    "add": "Generar Boleta",
+    "edit": "Editar Boleta",
+    "search": "Buscar boletas...",
+    "noData": "No se encontraron boletas",
+    "code": "Código",
+    "student": "Estudiante",
+    "period": "Período",
+    "year": "Año Académico",
+    "date": "Fecha",
+    "version": "Versión",
+    "preview": "Vista Previa PDF",
+    "generate": "Generar",
+    "notes": "Notas",
+    "status": "Estado",
+    "generalInfo": "Información General",
+    "statusHint": "El estado solo cambia mediante Generar / Archivar desde la lista.",
+    "confirmDeleteReport": "Esta boleta de calificaciones se eliminará permanentemente. ¿Continuar?"
+  }
+}

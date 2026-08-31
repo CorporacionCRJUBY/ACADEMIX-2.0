@@ -1,0 +1,20 @@
+{
+  "graduation": {
+    "title": "Graduación",
+    "add": "Agregar Registro de Graduación",
+    "edit": "Editar Registro de Graduación",
+    "search": "Buscar registros de graduación...",
+    "noData": "No se encontraron registros de graduación",
+    "code": "Código",
+    "student": "Estudiante",
+    "year": "Año de Graduación",
+    "date": "Fecha de Graduación",
+    "requirementsMet": "Requisitos Cumplidos",
+    "certificate": "Certificado",
+    "status": "Estado",
+    "validate": "Validar",
+    "validationNotes": "Notas de Validación",
+    "confirmValidate": "¿Está seguro de que desea validar este registro de graduación?",
+    "confirmDeleteRecord": "¿Está seguro de que desea eliminar este registro de graduación?"
+  }
+}

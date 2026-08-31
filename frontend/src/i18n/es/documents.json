@@ -1,0 +1,28 @@
+{
+  "documents": {
+    "title": "Documentos",
+    "add": "Agregar Documento",
+    "edit": "Editar Documento",
+    "upload": "Subir Documento",
+    "search": "Buscar documentos...",
+    "noData": "No se encontraron documentos",
+    "code": "Código",
+    "student": "Estudiante",
+    "type": "Tipo de Documento",
+    "identification": "Identificación",
+    "medical": "Médico",
+    "certificate": "Certificado",
+    "transcript": "Transcripción",
+    "consent": "Formulario de Consentimiento",
+    "other": "Otro",
+    "fileName": "Nombre del Archivo",
+    "size": "Tamaño",
+    "uploadDate": "Fecha de Carga",
+    "status": "Estado",
+    "selectFile": "Seleccione un archivo para subir",
+    "fileFormats": "Formatos aceptados: PDF, JPG, PNG (máx. 10 MB)",
+    "uploading": "Subiendo...",
+    "generalInfo": "Información del Documento",
+    "confirmDeleteDocument": "¿Está seguro de que desea eliminar este documento?"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "academicHistory": {
+    "title": "Historial Académico",
+    "add": "Agregar Registro",
+    "edit": "Editar Registro",
+    "search": "Buscar historial académico...",
+    "noData": "No se encontró historial académico",
+    "code": "Código",
+    "student": "Estudiante",
+    "subject": "Materia",
+    "period": "Período",
+    "year": "Año Académico",
+    "grade": "Calificación",
+    "letter": "Letra",
+    "date": "Fecha",
+    "status": "Estado",
+    "notes": "Notas",
+    "confirmDeleteRecord": "¿Está seguro de que desea eliminar este registro del historial académico? Esta acción no se puede deshacer.",
+    "lockedHint": "Este registro está bloqueado y ya no puede editarse ni eliminarse."
+  }
+}

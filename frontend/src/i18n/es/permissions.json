@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "title": "Permisos",
+    "add": "Agregar Permiso",
+    "edit": "Editar Permiso",
+    "search": "Buscar permisos...",
+    "noData": "No se encontraron permisos",
+    "confirmDeletePermission": "¿Está seguro de que desea eliminar este permiso? Los roles que lo usan perderán este acceso.",
+    "code": "Código",
+    "module": "Módulo",
+    "action": "Acción",
+    "description": "Descripción",
+    "view": "Ver",
+    "create": "Crear",
+    "delete": "Eliminar",
+    "approve": "Aprobar",
+    "reject": "Rechazar",
+    "generate": "Generar"
+  }
+}

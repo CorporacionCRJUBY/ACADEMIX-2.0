@@ -1,0 +1,21 @@
+{
+  "assignments": {
+    "title": "Assignments",
+    "add": "Add Assignment",
+    "edit": "Edit Assignment",
+    "search": "Search assignments...",
+    "noData": "No assignments found",
+    "code": "Code",
+    "teacher": "Teacher",
+    "subject": "Subject",
+    "grade": "Grade",
+    "section": "Section",
+    "branch": "Branch",
+    "academicYear": "Academic Year",
+    "schedule": "Schedule",
+    "status": "Status",
+    "generalInfo": "Assignment Information",
+    "academicInfo": "Academic Context",
+    "confirmDeleteAssignment": "Are you sure you want to delete this assignment?"
+  }
+}

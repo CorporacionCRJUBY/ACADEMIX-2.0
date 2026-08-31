@@ -1,0 +1,21 @@
+{
+  "academicPeriods": {
+    "title": "Academic Periods",
+    "add": "Add Period",
+    "edit": "Edit Period",
+    "search": "Search periods...",
+    "noData": "No academic periods found",
+    "code": "Code",
+    "name": "Name",
+    "year": "Academic Year",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "status": "Status",
+    "lock": "Lock",
+    "close": "Close",
+    "confirmLock": "Are you sure you want to lock this period? Grades will no longer be editable.",
+    "confirmClose": "Are you sure you want to close this period?",
+    "lockedNotice": "This period is locked and cannot be modified. Use the actions in the list if you need to revert its status.",
+    "confirmDeletePeriod": "Are you sure you want to delete this academic period?"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "branches": {
+    "title": "Sucursales",
+    "add": "Agregar Sucursal",
+    "edit": "Editar Sucursal",
+    "search": "Buscar sucursales...",
+    "noData": "No se encontraron sucursales",
+    "code": "Código",
+    "name": "Nombre",
+    "address": "Dirección",
+    "email": "Correo",
+    "phone": "Teléfono",
+    "status": "Estado",
+    "confirmDeleteBranch": "¿Está seguro de que desea eliminar esta sucursal?"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "medicalRecords": {
+    "title": "Registros Médicos",
+    "add": "Agregar Registro Médico",
+    "edit": "Editar Registro Médico",
+    "search": "Buscar registros médicos...",
+    "noData": "No se encontraron registros médicos",
+    "code": "Código",
+    "student": "Estudiante",
+    "hasAllergy": "Tiene Alergias",
+    "allergies": "Alergias",
+    "allergiesPlaceholder": "Indique las alergias conocidas...",
+    "condition": "Condición Médica",
+    "conditionPlaceholder": "Describa cualquier condición médica relevante...",
+    "medications": "Medicamentos",
+    "medicationsPlaceholder": "Indique los medicamentos actuales...",
+    "healthInsurance": "Seguro Médico",
+    "insuranceNumber": "Número de Póliza",
+    "emergencyContact": "Contacto de Emergencia",
+    "emergencyPhone": "Teléfono de Emergencia",
+    "lastCheckup": "Último Chequeo",
+    "notes": "Notas",
+    "generalInfo": "Información del Registro Médico",
+    "confirmDeleteRecord": "¿Está seguro de que desea eliminar este registro médico?"
+  }
+}

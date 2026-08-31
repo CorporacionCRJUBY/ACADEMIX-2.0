@@ -1,0 +1,19 @@
+{
+  "gransif": {
+    "title": "GRANSIF",
+    "add": "Add GRANSIF Record",
+    "edit": "Edit GRANSIF Record",
+    "search": "Search GRANSIF records...",
+    "noData": "No GRANSIF records found",
+    "code": "Code",
+    "student": "Student",
+    "year": "Academic Year",
+    "date": "Date",
+    "score": "Score",
+    "notes": "Notes",
+    "status": "Status",
+    "activate": "Activate",
+    "confirmActivate": "Are you sure you want to activate this GRANSIF record?",
+    "confirmDeleteRecord": "Are you sure you want to delete this GRANSIF record? This action cannot be undone."
+  }
+}

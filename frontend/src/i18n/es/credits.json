@@ -1,0 +1,25 @@
+{
+  "credits": {
+    "title": "Créditos",
+    "add": "Agregar Registro de Créditos",
+    "edit": "Editar Registro de Créditos",
+    "search": "Buscar registros de créditos...",
+    "noData": "No se encontraron registros de créditos",
+    "code": "Código",
+    "student": "Estudiante",
+    "period": "Período",
+    "type": "Tipo",
+    "academic": "Académico",
+    "elective": "Electivo",
+    "community": "Servicio Comunitario",
+    "social": "Social",
+    "earned": "Créditos Obtenidos",
+    "required": "Créditos Requeridos",
+    "notes": "Notas",
+    "status": "Estado",
+    "recalculate": "Recalcular",
+    "confirmRecalculate": "¿Está seguro de que desea recalcular los créditos de este estudiante?",
+    "generalInfo": "Información del Crédito",
+    "confirmDeleteCredit": "¿Está seguro de que desea eliminar este registro de crédito?"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "users": {
+    "title": "Users",
+    "add": "Add User",
+    "edit": "Edit User",
+    "search": "Search users...",
+    "noData": "No users found",
+    "generalInfo": "General Information",
+    "code": "Code",
+    "fullName": "Full Name",
+    "email": "Email",
+    "phone": "Phone",
+    "branch": "Branch",
+    "role": "Role",
+    "assignRoles": "Assign Roles",
+    "assignRolesTitle": "Assign Roles — {{user}}",
+    "assignRolesHint": "These are additional roles on top of this user's primary Role field. A user's permissions come from the union of all assigned roles.",
+    "password": "Password",
+    "newPassword": "New Password",
+    "confirmPassword": "Confirm Password",
+    "changePassword": "Change Password",
+    "passwordSection": "Password",
+    "passwordMismatch": "Passwords do not match",
+    "leaveBlankToKeep": "Leave blank to keep the current password",
+    "confirmDeleteUser": "Are you sure you want to delete this user? This action cannot be undone.",
+    "lastLogin": "Last Login",
+    "status": "Status"
+  }
+}

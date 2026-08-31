@@ -1,0 +1,27 @@
+{
+  "calendar": {
+    "title": "Calendario Escolar",
+    "add": "Agregar Evento",
+    "edit": "Editar Evento",
+    "search": "Buscar eventos...",
+    "noData": "No se encontraron eventos",
+    "code": "Código",
+    "description": "Descripción",
+    "date": "Fecha",
+    "year": "Año Académico",
+    "academicYear": "Año Académico",
+    "branch": "Sucursal",
+    "month": "Mes",
+    "eventType": "Tipo de Evento",
+    "event": "Evento",
+    "holiday": "Feriado",
+    "exam": "Examen",
+    "meeting": "Reunión",
+    "deadline": "Fecha Límite",
+    "other": "Otro",
+    "isHoliday": "Es Feriado",
+    "isWorkingDay": "Es Día Laboral",
+    "status": "Estado",
+    "confirmDeleteRecord": "¿Está seguro de que desea eliminar este evento del calendario? Esta acción no se puede deshacer."
+  }
+}

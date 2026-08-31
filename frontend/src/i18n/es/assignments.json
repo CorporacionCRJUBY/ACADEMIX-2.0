@@ -1,0 +1,21 @@
+{
+  "assignments": {
+    "title": "Asignaciones",
+    "add": "Agregar Asignación",
+    "edit": "Editar Asignación",
+    "search": "Buscar asignaciones...",
+    "noData": "No se encontraron asignaciones",
+    "code": "Código",
+    "teacher": "Docente",
+    "subject": "Materia",
+    "grade": "Grado",
+    "section": "Sección",
+    "branch": "Sucursal",
+    "academicYear": "Año Académico",
+    "schedule": "Horario",
+    "status": "Estado",
+    "generalInfo": "Información de la Asignación",
+    "academicInfo": "Contexto Académico",
+    "confirmDeleteAssignment": "¿Está seguro de que desea eliminar esta asignación?"
+  }
+}

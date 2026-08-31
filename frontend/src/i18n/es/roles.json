@@ -1,0 +1,16 @@
+{
+  "roles": {
+    "title": "Roles",
+    "add": "Agregar Rol",
+    "edit": "Editar Rol",
+    "search": "Buscar roles...",
+    "noData": "No se encontraron roles",
+    "code": "Código",
+    "name": "Nombre",
+    "description": "Descripción",
+    "permissions": "Permisos",
+    "assignPermissionsTitle": "Asignar Permisos — {{role}}",
+    "superAdminHasAllPermissions": "SUPER_ADMIN tiene automáticamente todos los permisos y no se puede modificar.",
+    "status": "Estado"
+  }
+}

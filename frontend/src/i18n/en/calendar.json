@@ -1,0 +1,27 @@
+{
+  "calendar": {
+    "title": "School Calendar",
+    "add": "Add Event",
+    "edit": "Edit Event",
+    "search": "Search events...",
+    "noData": "No events found",
+    "code": "Code",
+    "description": "Description",
+    "date": "Date",
+    "year": "Academic Year",
+    "academicYear": "Academic Year",
+    "branch": "Branch",
+    "month": "Month",
+    "eventType": "Event Type",
+    "event": "Event",
+    "holiday": "Holiday",
+    "exam": "Exam",
+    "meeting": "Meeting",
+    "deadline": "Deadline",
+    "other": "Other",
+    "isHoliday": "Is Holiday",
+    "isWorkingDay": "Is Working Day",
+    "status": "Status",
+    "confirmDeleteRecord": "Are you sure you want to delete this calendar event? This action cannot be undone."
+  }
+}
