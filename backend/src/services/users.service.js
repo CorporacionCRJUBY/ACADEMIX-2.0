@@ -25,9 +25,24 @@ const ALLOWED_FIELDS = ['email', 'password', 'full_name', 'phone', 'role_id', 'b
 // without touching the password field would resubmit the *hash* as the new
 // plaintext password, which update() below would then re-hash on top of
 // itself — silently corrupting the user's real password on every edit.
+//
+// FIX (segunda pasada de auditoría, ALTO #2): findById/findAll seleccionan
+// `users.*`, así que también salían en la respuesta el ciphertext de los
+// secretos TOTP, los hashes de los códigos de respaldo y el estado interno
+// de bloqueo. Nada de eso tiene uso legítimo en el cliente.
 function sanitize(record) {
   if (!record) return record;
-  const { password, ...safe } = record;
+  const {
+    password,
+    twofa_secret,
+    twofa_pending_secret,
+    twofa_backup_codes,
+    twofa_enabled_at,
+    login_attempts,
+    locked_until,
+    password_changed_at,
+    ...safe
+  } = record;
   return safe;
 }
 
@@ -128,10 +143,16 @@ const UsersService = {
     }
 
     const before = sanitize(existing);
+    // FIX (segunda pasada de auditoría, MEDIO #3): si el cambio de
+    // contraseña entra por PUT /users/:id, debe pasar por updatePassword
+    // (que fija password_changed_at y con ello invalida los refresh tokens
+    // previos, ver medio M6) en vez de la vía genérica de update().
+    const fields = { ...pick(payload, ALLOWED_FIELDS), updated_by: user.id };
+    delete fields.password;
+    await repository.update(id, fields);
     if (payload.password) {
-      payload.password = await bcrypt.hash(payload.password, 12);
+      await repository.updatePassword(id, await bcrypt.hash(payload.password, 12));
     }
-    await repository.update(id, { ...pick(payload, ALLOWED_FIELDS), updated_by: user.id });
     // Bug fix: same sync as create() — if this edit changes role_id, make
     // sure the login-time user_roles table reflects it too.
     if (payload.role_id) {

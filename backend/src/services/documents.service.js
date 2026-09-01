@@ -102,12 +102,15 @@ const DocumentsService = {
     const [id] = await repository.create(data);
     const record = await repository.findById(id);
     
+    // FIX (segunda pasada, BAJO #14): el payload de auditoría también se
+    // sanea — audit_logs es legible por quien tenga audit.view y file_path
+    // es una ruta absoluta del servidor que no debe quedar ahí.
     await auditService.log({
       user,
       action: 'CREATE',
       module: 'documents',
       recordCode: code,
-      after: record,
+      after: sanitize(record),
       req: null
     });
     
@@ -138,7 +141,7 @@ const DocumentsService = {
       action: 'UPLOAD',
       module: 'documents',
       recordCode: code,
-      after: record,
+      after: sanitize(record),
       req: null
     });
     
@@ -174,7 +177,7 @@ const DocumentsService = {
       await assertStudentInScope(payload.student_id, user);
     }
     
-    const before = { ...existing };
+    const before = sanitize(existing);
     await repository.update(id, { ...pick(payload, ALLOWED_FIELDS), updated_by: user.id });
     const after = await repository.findById(id);
     
@@ -184,7 +187,7 @@ const DocumentsService = {
       module: 'documents',
       recordCode: existing.code,
       before,
-      after,
+      after: sanitize(after),
       req: null
     });
     
@@ -202,7 +205,7 @@ const DocumentsService = {
       action: 'DELETE',
       module: 'documents',
       recordCode: existing.code,
-      before: existing,
+      before: sanitize(existing),
       req: null
     });
     

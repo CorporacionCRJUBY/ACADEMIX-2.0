@@ -9,6 +9,14 @@ const { validationResult } = require('express-validator');
  * @param {Object} res - Express response
  * @param {Function} next - Express next
  */
+// FIX (segunda pasada, BAJO #9): los valores fallidos se eco-envían en el
+// body 422; para campos sensibles (contraseñas, códigos 2FA) eso las deja
+// en logs de proxies y devtools. Se sustituyen por un marcador.
+const SENSITIVE_FIELDS = [
+  'password', 'newPassword', 'currentPassword', 'password_confirmation',
+  'code', 'challengeToken'
+];
+
 const validate = (req, res, next) => {
   // Obtener errores acumulados por las validaciones previas
   const errors = validationResult(req);
@@ -21,7 +29,7 @@ const validate = (req, res, next) => {
   const formattedErrors = errors.array().map(err => ({
     field: err.path,
     message: err.msg,
-    value: err.value,
+    value: SENSITIVE_FIELDS.includes(err.path) ? '[REDACTED]' : err.value,
   }));
 
   return res.status(422).json({

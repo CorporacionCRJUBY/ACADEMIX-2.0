@@ -69,13 +69,14 @@ const errorHandler = (err, req, res, next) => {
     });
   }
 
-  // Enviar respuesta al cliente
+  // Enviar respuesta al cliente. FIX (segunda pasada): el stack ya NO se
+  // incluye ni siquiera en desarrollo — revela rutas absolutas del servidor
+  // y estructura interna sin aportar nada que no esté ya en los logs de
+  // arriba, y un despiste de NODE_ENV en el despliegue lo filtraría a prod.
   res.status(status).json({
     success: false,
     code: code,
     message: message,
-    // Incluir stack solo en desarrollo
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
   });
 };
 

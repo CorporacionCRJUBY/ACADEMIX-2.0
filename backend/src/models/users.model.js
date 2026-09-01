@@ -144,6 +144,12 @@ const Users = {
     if (attempts >= this.MAX_LOGIN_ATTEMPTS) {
       const lockedUntil = new Date(Date.now() + this.LOCKOUT_MINUTES * 60 * 1000);
       update.locked_until = lockedUntil;
+      // FIX (segunda pasada, BAJO #8): si no se reinicia el contador al
+      // fijar el bloqueo, tras expirar locked_until el siguiente fallo
+      // vuelve a bloquear de inmediato (6 >= 5), contradiciendo la promesa
+      // de liberación automática. Con esto la cuenta vuelve a tener 5
+      // intentos frescos cuando el bloqueo expira.
+      update.login_attempts = 0;
     }
     await db(TABLE).where({ id }).update(update);
     return update.locked_until || null;

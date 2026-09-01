@@ -127,12 +127,13 @@ CREATE TABLE user_roles (
 );
 
 -- 053_revoked_tokens (lista de exclusión de JWT revocados antes de su
--- expiración; user_id nullable por si el token ya no tiene usuario)
+-- expiración; user_id nullable por si el token ya no tiene usuario).
+-- 058 amplía el enum para el challenge 2FA de un solo uso.
 CREATE TABLE revoked_tokens (
   id INT PRIMARY KEY AUTO_INCREMENT,
   jti VARCHAR(36) NOT NULL UNIQUE,
   user_id INT NULL,
-  token_type ENUM('access', 'refresh') NOT NULL,
+  token_type ENUM('access', 'refresh', '2fa_challenge') NOT NULL,
   expires_at TIMESTAMP NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,

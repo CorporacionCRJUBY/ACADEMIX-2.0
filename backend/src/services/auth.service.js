@@ -58,9 +58,12 @@ const AuthService = {
     const user = await usersRepository.findByEmail(email);
 
     // Bloqueo de cuenta: si ya está bloqueada por intentos fallidos previos,
-    // rechazar sin siquiera comparar la contraseña (y sin sumarle otro
-    // intento fallido al contador mientras dure el bloqueo).
+    // rechazar sin sumarle otro intento fallido al contador mientras dure el
+    // bloqueo. FIX (segunda pasada, BAJO #12): se ejecuta igualmente una
+    // comparación bcrypt de relleno para que el tiempo de respuesta no
+    // revele que la cuenta existe y está bloqueada.
     if (user && usersRepository.isLocked(user)) {
+      await bcrypt.compare(password, DUMMY_HASH);
       throw new AppError('Account locked due to too many failed login attempts. Try again later.', 423);
     }
 
@@ -142,18 +145,18 @@ const AuthService = {
       throw new AppError('Invalid or expired 2FA challenge', 401);
     }
 
-    // SEGURIDAD (bajo B2): el challenge es de UN solo uso. Sin esto, el
-    // token de 5 minutos podía reutilizarse para volver a intentar códigos
-    // (o canjearse de nuevo tras un login exitoso).
-    if (await revokedTokensRepository.isRevoked(decoded.jti)) {
+    // SEGURIDAD (bajo B2): el challenge canjeado con éxito es de UN solo
+    // uso. FIX (segunda pasada, MEDIO #5): la compuerta atómica es el
+    // insert de revocación (revoke() devuelve 0 si el jti ya estaba),
+    // pero se ejecuta DESPUÉS de validar el código: si se consumiera
+    // antes, un solo código mal tipeado quemaría el challenge entero y el
+    // usuario tendría que reloguear (contradice el flujo TOTP estándar,
+    // que permite reintentos dentro del TTL con rate limiting). El replay
+    // de un challenge YA canjeado se rechaza aquí con un read-check.
+    const alreadyConsumed = await revokedTokensRepository.isRevoked(decoded.jti);
+    if (alreadyConsumed) {
       throw new AppError('Invalid or expired 2FA challenge', 401);
     }
-    await revokedTokensRepository.revoke({
-      jti: decoded.jti,
-      userId: decoded.userId,
-      tokenType: '2fa_challenge',
-      expiresAt: new Date(decoded.exp * 1000)
-    });
 
     const user = await usersRepository.findById(decoded.userId);
     if (!user) throw new AppError('User not found', 404);
@@ -171,7 +174,16 @@ const AuthService = {
       throw new AppError('Account locked due to too many failed login attempts. Try again later.', 423);
     }
 
-    const twoFaState = await usersRepository.findTwoFactorState(user.id);
+    // FIX (segunda pasada, BAJO #10): si el descifrado del secreto TOTP
+    // falla (p. ej. rotación de ENCRYPTION_KEY) o el JSON de los códigos de
+    // respaldo está corrupto, responder con un error controlado en vez de
+    // un 500 opaco con stack.
+    let twoFaState;
+    try {
+      twoFaState = await usersRepository.findTwoFactorState(user.id);
+    } catch {
+      throw new AppError('Two-factor authentication is temporarily unavailable for this account', 503);
+    }
     if (!twoFaState?.twofa_enabled || !twoFaState.twofa_secret) {
       // La cuenta desactivó 2FA entre el login() y este paso (o nunca lo
       // tuvo activo del todo) — no hay nada que verificar.
@@ -183,7 +195,14 @@ const AuthService = {
 
     if (!valid) {
       // No coincidió como código TOTP: probar como código de respaldo.
-      const storedHashes = twoFaState.twofa_backup_codes ? JSON.parse(twoFaState.twofa_backup_codes) : [];
+      let storedHashes = [];
+      if (twoFaState.twofa_backup_codes) {
+        try {
+          storedHashes = JSON.parse(twoFaState.twofa_backup_codes);
+        } catch {
+          storedHashes = [];
+        }
+      }
       const remaining = await twoFactor.consumeBackupCode(code, storedHashes);
       if (remaining !== null) {
         valid = true;
@@ -206,6 +225,20 @@ const AuthService = {
     // primer 2FA válido posterior al despliegue.
     if (!twoFaState.twofa_secret_encrypted) {
       await usersRepository.upgradeTwoFactorSecret(user.id, encryptField(twoFaState.twofa_secret));
+    }
+
+    // Canje atómico: si otra petición paralela con este mismo challenge
+    // llegó primero y ya lo revocó, revoke() devuelve 0 y esta no emite
+    // sesión. Con un código válido esto no debería ocurrir en la práctica,
+    // pero cierra la carrera sin confiar en el read-check de arriba.
+    const claimed = await revokedTokensRepository.revoke({
+      jti: decoded.jti,
+      userId: decoded.userId,
+      tokenType: '2fa_challenge',
+      expiresAt: new Date(decoded.exp * 1000)
+    });
+    if (!claimed) {
+      throw new AppError('Invalid or expired 2FA challenge', 401);
     }
 
     await usersRepository.updateLastLogin(user.id);
@@ -419,18 +452,33 @@ const AuthService = {
       }
     }
 
+    // FIX (segunda pasada, MEDIO #4): activar 2FA también invalida las
+    // sesiones previas — un refresh token emitido antes de habilitar el
+    // segundo factor no debe poder seguir renovando access tokens.
+    if (user.twofa_enabled && user.twofa_enabled_at && decoded.iat) {
+      const enabledAtMs = new Date(user.twofa_enabled_at).getTime();
+      if (decoded.iat * 1000 < enabledAtMs) {
+        throw new AppError('Invalid refresh token', 401);
+      }
+    }
+
     // Endurecimiento adicional (rotación de refresh token): cada canje
     // consume el refresh token usado y entrega uno nuevo. Así, un refresh
     // token robado solo sirve una vez — en cuanto el dueño legítimo (o el
     // atacante) lo usa, el otro queda revocado en el siguiente intento, lo
     // que además delata el robo (dos "primeros usos" del mismo token no
-    // pueden suceder).
-    await revokedTokensRepository.revoke({
+    // pueden suceder). FIX (segunda pasada, MEDIO #5): el insert atómico es
+    // la propia compuerta — 0 filas insertadas significa que este refresh
+    // token ya fue canjeado por una petición concurrente.
+    const claimed = await revokedTokensRepository.revoke({
       jti: decoded.jti,
       userId: decoded.userId,
       tokenType: 'refresh',
       expiresAt: new Date(decoded.exp * 1000)
     });
+    if (!claimed) {
+      throw new AppError('Invalid refresh token', 401);
+    }
 
     const roles = await usersRepository.getRoles(user.id);
     const permissions = await usersRepository.getPermissions(user.id);

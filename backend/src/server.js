@@ -17,7 +17,7 @@ const startServer = async () => {
     logger.info('✅ Conexión a base de datos establecida');
 
     // Iniciar jobs programados
-    startJobs();
+    const jobs = startJobs();
     logger.info('✅ Jobs programados iniciados');
 
     // Iniciar servidor
@@ -30,7 +30,17 @@ const startServer = async () => {
     // Manejo de señales de terminación
     const shutdown = async (signal) => {
       logger.info(`\n📴 Recibida señal ${signal}, cerrando servidor...`);
-      
+
+      // FIX (segunda pasada, BAJO #15): detener los jobs programados para
+      // que ningún cron siga corriendo (y escribiendo en la BD) durante el
+      // drain ni después de cerrar la conexión.
+      try {
+        jobs.stopAll();
+        logger.info('✅ Jobs programados detenidos');
+      } catch (err) {
+        logger.error('❌ Error al detener jobs:', err);
+      }
+
       server.close(async () => {
         logger.info('✅ Servidor HTTP cerrado');
         
