@@ -1,8 +1,8 @@
 ﻿// FILE: backend/src/validators/attendance.validator.js
 const { body, param, query } = require('express-validator');
 
-const VALID_STATUSES = ['P', 'O', 'E', 'U'];
-const STATUS_MSG = 'Status must be P (Present), O (Online), E (Excused), or U (Unexcused)';
+const VALID_STATUSES = ['P', 'O', 'E', 'U', 'T'];
+const STATUS_MSG = 'Status must be P (Present), O (Online), E (Excused), U (Unexcused), or T (Tardy)';
 
 const attendanceValidators = {
   create: [

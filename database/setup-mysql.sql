@@ -22,8 +22,8 @@ CREATE DATABASE IF NOT EXISTS academix_v2
 
 -- 'localhost' cubre conexiones TCP desde 127.0.0.1 cuando el servidor
 -- resuelve nombres; '127.0.0.1' cubre el caso con skip_name_resolve.
-CREATE USER IF NOT EXISTS 'ADMIN'@'localhost' IDENTIFIED BY '<DB_PASSWORD>';
-CREATE USER IF NOT EXISTS 'ADMIN'@'127.0.0.1' IDENTIFIED BY '<DB_PASSWORD>';
+CREATE USER IF NOT EXISTS 'ADMIN'@'localhost' IDENTIFIED BY 'J-Admin-Crfenix123';
+CREATE USER IF NOT EXISTS 'ADMIN'@'127.0.0.1' IDENTIFIED BY 'J-Admin-Crfenix123';
 
 -- Privilegios mínimos:
 --   SELECT/INSERT/UPDATE/DELETE -> runtime de la API
