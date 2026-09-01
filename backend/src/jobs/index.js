@@ -53,20 +53,6 @@ const startJobs = () => {
     }
   });
 
-  // Ejecutar jobs inmediatamente al inicio (opcional)
-  // Descomentar si se desea ejecutar al arrancar la app
-  /*
-  setTimeout(async () => {
-    console.log('[Jobs] Ejecución inicial...');
-    try {
-      await lockExpiredGrades();
-    } catch (e) {}
-    try {
-      await archiveOldVersions();
-    } catch (e) {}
-  }, 5000);
-  */
-
   console.log('[Jobs] Jobs programados activos:');
   console.log('  - Grade Lock: cada 15 minutos');
   console.log('  - Report Archive: 2:00 AM diario');

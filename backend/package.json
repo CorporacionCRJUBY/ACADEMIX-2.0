@@ -18,7 +18,8 @@
     "migrate:make": "knex migrate:make --knexfile src/config/knexfile.js",
     "seed": "knex seed:run --knexfile src/config/knexfile.js",
     "seed:make": "knex seed:make --knexfile src/config/knexfile.js",
-    "db:fresh": "npm run migrate:rollback -- --all && npm run migrate && npm run seed"
+    "db:fresh": "npm run migrate:rollback -- --all && npm run migrate && npm run seed",
+    "verify": "npm run lint && npm test && node smoke-load.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

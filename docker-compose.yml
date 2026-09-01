@@ -1,12 +1,22 @@
 # Optional local dev stack — MySQL + backend + frontend.
+#
+# SEGURIDAD: las contraseñas NO viven en este archivo. Definir en el
+# entorno (o en un .env junto a este docker-compose.yml, gitignored):
+#   MYSQL_ROOT_PASSWORD=<password fuerte para root>
+#   DB_PASSWORD=<password del usuario ADMIN de la app>
 version: '3.8'
 services:
   db:
     image: mariadb:11
     environment:
-      MYSQL_ROOT_PASSWORD: root
+      # Falla al levantar si no está definida — nunca más un root/root por defecto
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Definir MYSQL_ROOT_PASSWORD en el entorno}
       # Debe coincidir con DB_NAME en backend/.env (la app usa 'academix_v2')
       MYSQL_DATABASE: academix_v2
+      # Usuario de aplicación con privilegios solo sobre academix_v2
+      # (equivalente a database/setup-mysql.sql para el stack dockerizado)
+      MYSQL_USER: ${DB_USER:-ADMIN}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?Definir DB_PASSWORD en el entorno}
     ports:
       - '3306:3306'
     volumes:
@@ -19,6 +29,9 @@ services:
       # Dentro de la red de docker-compose el host de la BD es el nombre del
       # servicio, no 'localhost' (que en el contenedor del backend no apunta a nada)
       DB_HOST: db
+      DB_USER: ${DB_USER:-ADMIN}
+      DB_PASSWORD: ${DB_PASSWORD:?Definir DB_PASSWORD en el entorno}
+      DB_NAME: academix_v2
     ports:
       # backend/src/server.js escucha en PORT (5000 por defecto en .env)
       - '5000:5000'

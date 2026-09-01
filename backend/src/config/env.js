@@ -71,6 +71,20 @@ const config = {
   // de esta API y sigue siendo configurable por si algún despliegue
   // concreto lo necesitara mayor.
   JSON_BODY_LIMIT: process.env.JSON_BODY_LIMIT || '2mb',
+
+  // SEGURIDAD (despliegue detrás de reverse proxy): Express necesita
+  // `trust proxy` para leer la IP real del cliente (X-Forwarded-For) en los
+  // rate limiters y para honoring cookies Secure tras TLS-terminación.
+  // Sin configurar = false (servidor expuesto directo): nadie puede
+  // falsificar su IP de rate limiting con headers X-Forwarded-For.
+  // Valores: 'true', un número de saltos ('1'), o lista/subnet ('loopback').
+  TRUST_PROXY: (() => {
+    const raw = process.env.TRUST_PROXY;
+    if (raw === undefined || raw === '' || raw === 'false') return false;
+    if (raw === 'true') return true;
+    const hops = parseInt(raw, 10);
+    return Number.isFinite(hops) && hops >= 1 ? hops : raw;
+  })(),
 };
 
 module.exports = config;

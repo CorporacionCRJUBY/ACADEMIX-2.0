@@ -13,7 +13,7 @@
   `academic_history`, `medical_records`, `graduation_records` y `gransif_records`
   (migración 056).
 
-## Core Entities & Tables (57 Migrations)
+## Core Entities & Tables (58 Migrations)
 
 ### 1. Security & Identity
 - `users`: Core account table with password hashes (bcrypt) and branch association.
@@ -28,7 +28,10 @@
 - `role_permissions`: Many-to-many relationship between roles and permissions.
 - `code_sequences`: Atomic counters for each prefix and year.
 - `revoked_tokens`: Lista negra de JWT (`jti`) revocados antes de su expiración
-  (logout, cambio de contraseña, revocación de sesiones).
+  (logout, cambio de contraseña, revocación de sesiones). `token_type` admite
+  `access`, `refresh` y `2fa_challenge` (migración 058): los challenges 2FA se
+  canjean una sola vez insertando aquí su jti — el INSERT atómico con UNIQUE(jti)
+  es la compuerta single-use (un duplicado falla con ER_DUP_ENTRY).
 
 ### 2. Academic Core
 - `students`: Student profile with `middle_name`, `second_last_name`, `identification_number`, `photo_url`, `branch_id`, and `status`.

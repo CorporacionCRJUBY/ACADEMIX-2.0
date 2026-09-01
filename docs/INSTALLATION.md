@@ -26,7 +26,7 @@
 
    DB_HOST=localhost
    DB_PORT=3306
-   DB_USER=root
+   DB_USER=ADMIN
    DB_PASSWORD=your_password
    DB_NAME=academix_v2
 
@@ -49,14 +49,22 @@
    JSON_BODY_LIMIT=2mb
    ```
 
-3. **Run Database Migrations & Seeds:**
+3. **Create Database & Application User (once):**
+   ```bash
+   # Reemplazar <DB_PASSWORD> en database/setup-mysql.sql por la contraseña
+   # elegida y ejecutar como root. Crea academix_v2 y el usuario ADMIN con
+   # privilegios mínimos (solo sobre esa base).
+   mysql -uroot -p < database/setup-mysql.sql
+   ```
+
+4. **Run Database Migrations & Seeds:**
    ```bash
    cd backend
    npm run migrate
    npm run seed
    ```
 
-4. **Start Application:**
+5. **Start Application:**
    ```bash
    # Start backend (Port 5000)
    cd backend && npm run dev

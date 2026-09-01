@@ -7,6 +7,11 @@ const logger = require('./utils/logger');
 
 const PORT = config.PORT || 3000;
 
+// `trust proxy` viene de TRUST_PROXY (config/env.js). false por defecto:
+// si el servidor está expuesto directamente, Express ignora X-Forwarded-For
+// y los rate limiters no se pueden evadir falsificando ese header.
+app.set('trust proxy', config.TRUST_PROXY);
+
 /**
  * Inicializa el servidor
  */
